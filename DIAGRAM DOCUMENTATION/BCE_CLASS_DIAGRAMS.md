@@ -9,7 +9,7 @@
 2. [Authentication Module](#authentication-module)
 3. [User Account Module](#user-account-module)
 4. [User Profile Module](#user-profile-module)
-5. [Role Manageme   nt Module](#role-management-module)
+5. [Role Management Module](#role-management-module)
 6. [Request Management Module](#request-management-module)
 7. [Shortlist Management Module](#shortlist-management-module)
 8. [Entity Classes](#entity-classes)
@@ -1569,4 +1569,5 @@ Profile (1) ←→ (N) User (potential)
 ---
 
 ## End of BCE Class Diagrams
+
 
