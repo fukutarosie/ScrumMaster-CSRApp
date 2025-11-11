@@ -3,9 +3,11 @@ from supabase import create_client
 import os
 from dotenv import load_dotenv
 import time
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from environment.env
+env_path = Path(__file__).parent.parent.parent / 'environment.env'
+load_dotenv(dotenv_path=env_path)
 
 # Initialize Supabase client with environment variables
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -34,24 +36,24 @@ def get_supabase():
 def execute_with_retry(query_func, max_retries=2, retry_delay=0.5):
     """
     Execute a Supabase query with automatic retry on timeout/connection errors
-    
+
     Args:
         query_func: Function that executes the query
         max_retries: Maximum number of retry attempts
         retry_delay: Delay between retries in seconds
-    
+
     Returns:
         Query result
     """
     last_error = None
-    
+
     for attempt in range(max_retries + 1):
         try:
             return query_func()
         except Exception as e:
             last_error = e
             error_msg = str(e).lower()
-            
+
             # Retry on timeout or connection errors
             if attempt < max_retries and ('timeout' in error_msg or 'connection' in error_msg):
                 print(f"[WARNING] Query attempt {attempt + 1} failed, retrying in {retry_delay}s...")
@@ -60,7 +62,7 @@ def execute_with_retry(query_func, max_retries=2, retry_delay=0.5):
             else:
                 # Don't retry other errors or if max retries reached
                 raise
-    
+
     # Should not reach here, but just in case
     raise last_error
 
