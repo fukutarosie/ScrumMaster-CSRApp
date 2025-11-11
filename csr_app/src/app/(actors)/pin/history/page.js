@@ -6,6 +6,7 @@ import axios from 'axios';
 import Header from '../../../components/Header';
 import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
+import Link from 'next/link';
 
 export default function CompletedMatches() {
   const router = useRouter();
@@ -149,6 +150,16 @@ export default function CompletedMatches() {
       <Header title="Completed Matches" subtitle="View your fulfilled requests and CSR matches" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <Link href="/pin">
+            <button className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </Link>
+        </div>
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
         {/* Filters */}
