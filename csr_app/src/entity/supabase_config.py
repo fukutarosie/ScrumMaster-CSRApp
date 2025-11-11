@@ -22,7 +22,7 @@ def _warmup_connection():
     """Warm up the Supabase connection to avoid cold start issues"""
     try:
         # Simple query to establish connection
-        supabase.table('roles').select("id").limit(1).execute()
+        supabase.table('role').select("id").limit(1).execute()
         print("[INFO] Supabase connection warmed up successfully")
     except Exception as e:
         print(f"[WARNING] Supabase warmup failed (will retry on first request): {str(e)}")
@@ -34,24 +34,24 @@ def get_supabase():
 def execute_with_retry(query_func, max_retries=2, retry_delay=0.5):
     """
     Execute a Supabase query with automatic retry on timeout/connection errors
-    
+
     Args:
         query_func: Function that executes the query
         max_retries: Maximum number of retry attempts
         retry_delay: Delay between retries in seconds
-    
+
     Returns:
         Query result
     """
     last_error = None
-    
+
     for attempt in range(max_retries + 1):
         try:
             return query_func()
         except Exception as e:
             last_error = e
             error_msg = str(e).lower()
-            
+
             # Retry on timeout or connection errors
             if attempt < max_retries and ('timeout' in error_msg or 'connection' in error_msg):
                 print(f"[WARNING] Query attempt {attempt + 1} failed, retrying in {retry_delay}s...")
@@ -60,7 +60,7 @@ def execute_with_retry(query_func, max_retries=2, retry_delay=0.5):
             else:
                 # Don't retry other errors or if max retries reached
                 raise
-    
+
     # Should not reach here, but just in case
     raise last_error
 

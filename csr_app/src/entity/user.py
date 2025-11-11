@@ -109,7 +109,8 @@ class User:
         self.is_active = data.get('is_active', True)
         self.created_at = data.get('created_at')
         self.last_login = data.get('last_login')
-        self.roles = data.get('roles')
+        # Support both 'role' (singular, from joined query) and 'roles' (plural, backward compatibility)
+        self.roles = data.get('role') or data.get('roles')
     
     # ============================================================================
     # VALIDATION METHODS (Instance methods)
