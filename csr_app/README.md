@@ -1,170 +1,66 @@
 # CSR Application
 
-Project developed for CSIT314 Software Development Methodologies.
-
-## Overview
-Full‑stack Customer Service Request (CSR) system using:
-- **Backend:** Flask (Python) + Supabase PostgreSQL
-- **Frontend:** Next.js 14 (React) + Tailwind CSS
-- **Architecture:** BCE (Boundary‑Control‑Entity)
+Full-stack Customer Service Request system for CSIT314 Software Development Methodologies.
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
-Before you start, make sure you have:
-- **Python 3.10+** ([Download](https://www.python.org/downloads/))
-- **Node.js 18+** and npm ([Download](https://nodejs.org/))
-- **Git** ([Download](https://git-scm.com/downloads))
-- **Supabase account** with project URL and anon key
-
-### Verify Your Installation:
-Open terminal/command prompt and run:
-```bash
-python --version    # or python3 --version
-node --version
-npm --version
-git --version
-```
+- Python 3.10+
+- Node.js 18+ and npm
+- Git
+- Supabase project (URL + anon key)
 
 ---
 
-## 🚀 Quick Start (Terminal Only)
+## Setup & Run
 
-### Step 1: Clone the Repository
+### 1. Clone Repository
 ```bash
 git clone https://github.com/fukutarosie/ScrumMaster-CSRApp.git
-cd ScrumMaster-CSRApp
+cd ScrumMaster-CSRApp/csr_app
+```
+
+### 2. Create `.env` File
+Create `.env` in the `csr_app` folder with:
+```env
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-key
+FLASK_ENV=development
+SECRET_KEY=dev-secret
+```
+
+### 3. Run Database Migration (First Time Only)
+Open Supabase SQL Editor and run **in order**:
+1. `STEP_1_BACKUP_SQL.sql`
+2. `STEP_2_RENAME_SQL.sql`
+3. `STEP_3_VERIFY_SQL.sql`
+
+### 4. Start Backend (Terminal 1)
+```bash
 cd csr_app
-```
-
-### Step 2: Set Up Environment Variables
-Create a `.env` file in the `csr_app` folder (same level as `app.py`):
-
-**Windows (PowerShell):**
-```powershell
-New-Item .env -ItemType File
-notepad .env
-```
-
-**macOS/Linux:**
-```bash
-touch .env
-nano .env    # or use your preferred editor (vim, code, etc.)
-```
-
-Add these lines to `.env`:
-   ```env
-SUPABASE_URL=your-supabase-project-url
-SUPABASE_KEY=your-supabase-anon-key
-   FLASK_ENV=development
-SECRET_KEY=dev-secret-key-change-in-production
-```
-Save and close the file.
-
-### Step 3: Open TWO Terminal Windows
-
-You need **two separate terminal windows** - one for backend, one for frontend.
-
----
-
-### **Terminal 1: Backend (Flask)**
-
-```bash
-# Navigate to csr_app folder
-cd path/to/ScrumMaster-CSRApp/csr_app
-
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install Python dependencies
+venv\Scripts\activate          # macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
-
-# Run backend server
 python app.py
 ```
+✅ Backend: http://localhost:5000
 
-**Expected Output:**
-```
- * Running on http://127.0.0.1:5000
- * Running on http://192.168.x.x:5000
-```
-
-✅ Backend is now running on `http://localhost:5000`
-
-**Keep this terminal window open!**
-
----
-
-### **Terminal 2: Frontend (Next.js)**
-
-Open a NEW terminal window:
-
+### 5. Start Frontend (Terminal 2)
 ```bash
-# Navigate to csr_app/src folder
-cd path/to/ScrumMaster-CSRApp/csr_app/src
-
-# Install Node.js dependencies
+cd csr_app/src
 npm install
-
-# Run frontend development server
 npm run dev
 ```
+✅ Frontend: http://localhost:3000
 
-**Expected Output:**
-```
-  ▲ Next.js 14.x.x
-  - Local:        http://localhost:3000
-  - Network:      http://192.168.x.x:3000
-```
+### 6. Access Application
+Open browser: http://localhost:3000
 
-✅ Frontend is now running on `http://localhost:3000`
-
-**Keep this terminal window open too!**
-
----
-
-### Step 4: Access the Application
-
-Open your web browser and go to:
-```
-http://localhost:3000
-```
-
-### Default Login Credentials:
-- **Admin:** username: `admin1`, password: `password123`
-- **PIN User:** username: `pin_user1`, password: `password123`
-- **CSR Rep:** username: `csr_rep1`, password: `password123`
-
----
-
-## 🔧 Important: Database Schema Migration
-
-**⚠️ CRITICAL:** This project recently migrated from **plural** to **singular** table names.
-
-If you're setting up for the first time, you **MUST** run the SQL migration scripts in your Supabase database:
-
-1. Open your Supabase project → SQL Editor
-2. Run these scripts **in order**:
-   - `STEP_1_BACKUP_SQL.sql` (creates backups)
-   - `STEP_2_RENAME_SQL.sql` (renames tables)
-   - `STEP_3_VERIFY_SQL.sql` (verifies migration)
-
-📚 See `MIGRATION_COMPLETE.md` for full details.
-
-**Current Table Names (Singular):**
-- `user` (not `users`)
-- `role` (not `roles`)
-- `request` (not `requests`)
-- `service_type` (not `service_types`)
-- `shortlist` ✅ (already singular)
-- `request_status_history` ✅ (already singular)
+**Login Credentials:**
+- Admin: `admin1` / `password123`
+- PIN User: `pin_user1` / `password123`
+- CSR Rep: `csr_rep1` / `password123`
 
 ---
 
