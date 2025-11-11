@@ -81,7 +81,7 @@ class Shortlist:
         supabase = get_supabase()
         result = execute_with_retry(
             lambda: supabase.table('shortlist')
-            .select('*, requests(*)')
+            .select('*, request(*)')
             .eq('id', shortlist_id)
             .execute()
         )
@@ -166,7 +166,7 @@ class Shortlist:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .select('id, status')
             .eq('id', self.request_id)
             .execute()
@@ -417,7 +417,7 @@ class Shortlist:
         supabase = get_supabase()
         result = execute_with_retry(
             lambda: supabase.table('shortlist')
-            .select('*, requests(*)')
+            .select('*, request(*)')
             .execute()
         )
         
@@ -438,7 +438,7 @@ class Shortlist:
             List of Shortlist objects
         """
         supabase = get_supabase()
-        query = supabase.table('shortlist').select('*, requests(*)').eq('csr_user_id', csr_user_id)
+        query = supabase.table('shortlist').select('*, request(*)').eq('csr_user_id', csr_user_id)
         
         if status:
             query = query.eq('status', status)
@@ -463,7 +463,7 @@ class Shortlist:
         supabase = get_supabase()
         result = execute_with_retry(
             lambda: supabase.table('shortlist')
-            .select('*, requests(*)')
+            .select('*, request(*)')
             .eq('request_id', request_id)
             .execute()
         )
@@ -504,7 +504,7 @@ class Shortlist:
             List of Shortlist objects matching criteria
         """
         supabase = get_supabase()
-        query = supabase.table('shortlist').select('*, requests(*)')
+        query = supabase.table('shortlist').select('*, request(*)')
         
         if csr_user_id:
             query = query.eq('csr_user_id', csr_user_id)
@@ -543,7 +543,7 @@ class Shortlist:
         supabase = get_supabase()
         result = execute_with_retry(
             lambda: supabase.table('shortlist')
-            .select('*, requests(*)')
+            .select('*, request(*)')
             .eq('csr_user_id', csr_user_id)
             .eq('request_id', request_id)
             .execute()

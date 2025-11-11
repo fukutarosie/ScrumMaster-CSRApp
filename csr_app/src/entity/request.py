@@ -89,7 +89,7 @@ class Request:
         """Load request data from database by ID (private method)"""
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .select('*')
             .eq('id', request_id)
             .execute()
@@ -167,7 +167,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
+            lambda: supabase.table('user')
             .select('id, role_id')
             .eq('id', self.pin_user_id)
             .execute()
@@ -193,7 +193,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_types')
+            lambda: supabase.table('service_type')
             .select('id')
             .eq('service_name', self.service_type)
             .execute()
@@ -252,7 +252,7 @@ class Request:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('requests')
+                lambda: supabase.table('request')
                 .update(update_data)
                 .eq('id', self.id)
                 .execute()
@@ -277,7 +277,7 @@ class Request:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('requests')
+                lambda: supabase.table('request')
                 .insert(insert_data)
                 .execute()
             )
@@ -305,7 +305,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .delete()
             .eq('id', self.id)
             .execute()
@@ -335,7 +335,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({
                 'status': self.status,
                 'suspended_at': self.suspended_at,
@@ -377,7 +377,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({
                 'status': self.status,
                 'fulfilled_at': self.fulfilled_at,
@@ -411,7 +411,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({
                 'is_archived': True,
                 'updated_at': datetime.now().isoformat()
@@ -435,7 +435,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({'view_count': self.view_count})
             .eq('id', self.id)
             .execute()
@@ -452,7 +452,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({'shortlist_count': self.shortlist_count})
             .eq('id', self.id)
             .execute()
@@ -469,7 +469,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .update({'shortlist_count': self.shortlist_count})
             .eq('id', self.id)
             .execute()
@@ -553,7 +553,7 @@ class Request:
             List of Request objects
         """
         supabase = get_supabase()
-        query = supabase.table('requests').select('*')
+        query = supabase.table('request').select('*')
         
         if not include_archived:
             query = query.eq('is_archived', False)
@@ -577,7 +577,7 @@ class Request:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .select('*')
             .eq('pin_user_id', pin_user_id)
             .execute()
@@ -600,7 +600,7 @@ class Request:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('requests')
+            lambda: supabase.table('request')
             .select('*')
             .eq('status', status)
             .eq('is_archived', False)
@@ -630,7 +630,7 @@ class Request:
             List of Request objects matching criteria
         """
         supabase = get_supabase()
-        query = supabase.table('requests').select('*').eq('is_archived', False)
+        query = supabase.table('request').select('*').eq('is_archived', False)
         
         if service_type:
             query = query.eq('service_type', service_type)
@@ -661,7 +661,7 @@ class Request:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_types')
+            lambda: supabase.table('service_type')
             .select('*')
             .execute()
         )
