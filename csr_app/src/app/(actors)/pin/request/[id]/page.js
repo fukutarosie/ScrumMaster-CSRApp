@@ -209,7 +209,7 @@ export default function RequestDetail() {
       <div className="min-h-screen bg-gray-100">
         <Header title="Request Details" />
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link href="/pin/dashboard">
+          <Link href="/pin">
             <button className="text-blue-600 hover:text-blue-800 font-semibold mb-4">
               ← Back to Dashboard
             </button>
@@ -238,12 +238,23 @@ export default function RequestDetail() {
     <div className="min-h-screen bg-gray-100">
       <Header title="Request Details" subtitle={request.title} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <Link href="/pin/dashboard">
-          <button className="text-blue-600 hover:text-blue-800 font-semibold mb-6">
-            ← Back to Dashboard
-          </button>
-        </Link>
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/pin">
+            <button className="text-blue-600 hover:text-blue-800 font-semibold">
+              ← Back to Dashboard
+            </button>
+          </Link>
+          
+          {request.status === 'FULFILLED' && (
+            <Link href="/pin/history">
+              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                <span>📜</span>
+                <span>View History</span>
+              </button>
+            </Link>
+          )}
+        </div>
         
         {/* Request Header */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">

@@ -11,8 +11,8 @@ def logout():
     """
     User logout endpoint
     
-    Logout is primarily client-side (removing token from localStorage).
-    This endpoint validates the token and returns success.
+    Logout removes token from localStorage.
+    Returns success if token is valid.
     """
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
@@ -25,7 +25,6 @@ def logout():
                 "message": "Invalid or expired token"
             }), 401
         
-        # Client-side will remove the token from localStorage
         return jsonify({
             "success": True,
             "message": "Logout successful"

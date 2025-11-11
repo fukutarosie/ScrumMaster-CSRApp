@@ -50,7 +50,10 @@ class SuspendPINRequestController:
                 return ({'success': False, 'message': 'Only ACTIVE requests can be suspended'}, 400)
             
             # Suspend request (instance method)
-            reason = self.data.get('reason', '').strip() if self.data else None
+            raw_reason = None
+            if isinstance(self.data, dict):
+                raw_reason = self.data.get('reason')
+            reason = raw_reason.strip() if isinstance(raw_reason, str) else None
             self.request.suspend(reason)
             
             return ({
@@ -60,5 +63,7 @@ class SuspendPINRequestController:
             }, 200)
             
         except Exception as e:
+            import traceback
             print(f"Error suspending request: {str(e)}")
+            traceback.print_exc()
             return ({'success': False, 'message': 'Internal server error'}, 500)

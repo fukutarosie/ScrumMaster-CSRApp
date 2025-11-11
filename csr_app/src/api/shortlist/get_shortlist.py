@@ -22,15 +22,11 @@ def get_shortlist():
     end_date = request.args.get('end_date', '').strip() or None
     service_type = request.args.get('service_type', '').strip() or None
     
-    # Use OOP instance method
-    controller = GetShortlistController(
-        auth_token,
+    # Controller currently exposes a static method interface
+    response, status_code = GetShortlistController.get_shortlist(
+        auth_token=auth_token,
         status_filter=status,
-        page=page,
-        limit=limit,
-        start_date=start_date,
-        end_date=end_date,
-        service_type=service_type
+        page_str=page,
+        limit_str=limit
     )
-    response, status_code = controller.execute()
     return jsonify(response), status_code

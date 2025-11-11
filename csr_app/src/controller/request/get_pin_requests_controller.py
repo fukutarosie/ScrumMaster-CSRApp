@@ -4,6 +4,7 @@ Get PIN Requests Controller - TRUE OOP Implementation
 
 from typing import Dict, Tuple
 from src.entity.request import Request
+from src.entity.shortlist import Shortlist
 from src.entity import User
 from src.utils.helpers import ResponseHelpers, PaginationHelpers
 
@@ -55,7 +56,32 @@ class GetPINRequestsController:
             
             # Apply filters
             if self.status_param:
-                self.requests = [r for r in self.requests if r.status == self.status_param]
+                status_param_upper = self.status_param.upper()
+                
+                if status_param_upper == 'IN_PROGRESS':
+                    # IN_PROGRESS: Request is ACTIVE and has a shortlist entry with IN_PROGRESS status
+                    print(f"[DEBUG] Filtering for IN_PROGRESS requests")
+                    print(f"[DEBUG] Total requests before filter: {len(self.requests)}")
+                    in_progress_requests = []
+                    for req in self.requests:
+                        if req.status == Request.STATUS_ACTIVE:
+                            assignment = Shortlist.active_assignment_for_request(req.id)
+                            print(f"[DEBUG] Request {req.id} - Status: {req.status}, Assignment: {assignment.status if assignment else 'None'}")
+                            if assignment and assignment.status == Shortlist.STATUS_IN_PROGRESS:
+                                in_progress_requests.append(req)
+                                print(f"[DEBUG] ✅ Request {req.id} added to IN_PROGRESS list")
+                    self.requests = in_progress_requests
+                    print(f"[DEBUG] Total IN_PROGRESS requests: {len(self.requests)}")
+                    
+                elif status_param_upper == Request.STATUS_FULFILLED:
+                    # Include legacy 'COMPLETED' status for fulfilled tab
+                    allowed_statuses = {Request.STATUS_FULFILLED, 'COMPLETED'}
+                    self.requests = [r for r in self.requests if (r.status or '').upper() in allowed_statuses]
+                else:
+                    # Normal status filter
+                    allowed_statuses = {status_param_upper}
+                    self.requests = [r for r in self.requests if (r.status or '').upper() in allowed_statuses]
+                    
             if self.service_type:
                 self.requests = [r for r in self.requests if r.service_type == self.service_type]
             
@@ -67,8 +93,19 @@ class GetPINRequestsController:
             end = start + limit
             paginated_requests = self.requests[start:end]
             
-            # Convert to dictionaries
-            requests_data = [req.to_dict() for req in paginated_requests]
+            # Convert to dictionaries and add assignment status
+            requests_data = []
+            for req in paginated_requests:
+                req_dict = req.to_dict()
+                # Add assignment status for all requests
+                assignment = Shortlist.active_assignment_for_request(req.id)
+                if assignment:
+                    req_dict['assignment_status'] = assignment.status
+                    req_dict['active_assignment'] = assignment.to_assignment_dict()
+                else:
+                    req_dict['assignment_status'] = None
+                    req_dict['active_assignment'] = None
+                requests_data.append(req_dict)
             
             # Build pagination info
             pagination = {

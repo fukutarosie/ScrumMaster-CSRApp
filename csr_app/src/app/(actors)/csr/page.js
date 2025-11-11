@@ -347,7 +347,7 @@ export default function CSRDashboard() {
           </button>
 
           <button
-            onClick={() => router.push('/csr/history')}
+            onClick={() => router.push('/csr/shortlist?tab=COMPLETED')}
             className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg shadow-lg p-6 hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105"
           >
             <div className="text-4xl mb-3">�</div>

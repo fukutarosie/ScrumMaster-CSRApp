@@ -194,7 +194,7 @@ export default function RequestCard({
             actionButton
           ) : (
             <button className={`w-full text-center font-semibold text-sm py-2 rounded transition ${colors.button}`}>
-              View Details →
+              More Details →
             </button>
           )}
         </div>

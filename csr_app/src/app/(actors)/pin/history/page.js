@@ -18,6 +18,7 @@ export default function CompletedMatches() {
   // Date filters
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [dateError, setDateError] = useState('');
   const [serviceType, setServiceType] = useState('');
   const [serviceTypes, setServiceTypes] = useState([]);
   
@@ -61,6 +62,14 @@ export default function CompletedMatches() {
     setError('');
     
     try {
+      const token = getToken();
+      if (!token) {
+        setError('Not authenticated');
+        toast.error('Please log in again');
+        setLoading(false);
+        return;
+      }
+
       const params = {
         page: currentPage,
         limit: 10
@@ -70,24 +79,33 @@ export default function CompletedMatches() {
       if (endDate) params.end_date = endDate;
       if (serviceType) params.service_type = serviceType;
 
+      console.log('[DEBUG] Fetching completed matches with params:', params);
+
       const response = await axios.get('http://localhost:5000/api/requests/history', {
-        headers: { 'Authorization': `Bearer ${getToken()}` },
+        headers: { 'Authorization': `Bearer ${token}` },
         params
       });
 
+      console.log('[DEBUG] History response:', response.data);
+
       if (response.data.success) {
-        setMatches(response.data.data);
+        setMatches(response.data.data || []);
         
         if (response.data.pagination) {
-          setTotalPages(response.data.pagination.total_pages);
-          setTotalItems(response.data.pagination.total);
+          setTotalPages(response.data.pagination.pages || 1);
+          setTotalItems(response.data.pagination.total || 0);
         }
+      } else {
+        setError(response.data.message || 'Failed to fetch completed matches');
+        toast.error(response.data.message || 'Failed to fetch completed matches');
       }
     } catch (err) {
-      const msg = 'Failed to fetch completed matches';
+      console.error('[ERROR] Failed to fetch completed matches:', err);
+      console.error('[ERROR] Error details:', err.response?.data);
+      
+      const msg = err.response?.data?.message || err.message || 'Failed to fetch completed matches';
       setError(msg);
       toast.error(msg);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -135,30 +153,49 @@ export default function CompletedMatches() {
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            🔍 Filter Your History
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => {
+                  const newStartDate = e.target.value;
+                  setStartDate(newStartDate);
                   setCurrentPage(1);
-                  setStartDate(e.target.value);
+                  
+                  // Validate date range
+                  if (endDate && newStartDate && new Date(newStartDate) > new Date(endDate)) {
+                    setDateError('From Date cannot be after To Date');
+                  } else {
+                    setDateError('');
+                  }
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${dateError ? 'border-red-500' : 'border-gray-300'}`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => {
+                  const newEndDate = e.target.value;
+                  setEndDate(newEndDate);
                   setCurrentPage(1);
-                  setEndDate(e.target.value);
+                  
+                  // Validate date range
+                  if (startDate && newEndDate && new Date(startDate) > new Date(newEndDate)) {
+                    setDateError('To Date cannot be before From Date');
+                  } else {
+                    setDateError('');
+                  }
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${dateError ? 'border-red-500' : 'border-gray-300'}`}
               />
             </div>
 
@@ -186,6 +223,7 @@ export default function CompletedMatches() {
                 onClick={() => {
                   setStartDate('');
                   setEndDate('');
+                  setDateError('');
                   setServiceType('');
                   setCurrentPage(1);
                 }}
@@ -195,6 +233,13 @@ export default function CompletedMatches() {
               </button>
             </div>
           </div>
+          
+          {/* Date validation error */}
+          {dateError && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">⚠️ {dateError}</p>
+            </div>
+          )}
         </div>
 
         {/* Summary Stats */}
@@ -253,52 +298,71 @@ export default function CompletedMatches() {
                   {/* CSR Match Details */}
                   {match.matched_csr && match.matched_csr.length > 0 ? (
                     <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                      <h4 className="font-semibold text-green-900 mb-3">Matched CSR Representative</h4>
+                      <h4 className="font-semibold text-green-900 mb-3">✅ Matched CSR Representative</h4>
                       {match.matched_csr.map((csr) => (
-                        <div key={csr.id} className="space-y-2">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-green-700 font-medium">CSR User ID</p>
-                              <p className="text-green-900">#{csr.csr_user_id}</p>
+                        <div key={csr.id} className="space-y-3">
+                          
+                          {/* CSR Info Card */}
+                          {csr.csr_user && (
+                            <div className="bg-white p-3 rounded-lg border border-green-200">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                                  {csr.csr_user.full_name ? csr.csr_user.full_name.charAt(0).toUpperCase() : 'C'}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-lg font-bold text-gray-900 truncate">
+                                    {csr.csr_user.full_name || `CSR User #${csr.csr_user_id}`}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    CSR Representative • ID: #{csr.csr_user.id}
+                                  </p>
+                                  {csr.csr_user.email && (
+                                    <p className="text-xs text-gray-500 mt-1 truncate">
+                                      📧 {csr.csr_user.email}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
+                          )}
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
                             {csr.volunteered_hours && (
                               <div>
                                 <p className="text-green-700 font-medium">Volunteer Rating</p>
-                                <p className="text-green-900">⭐ {csr.volunteered_hours}/5</p>
+                                <p className="text-green-900 text-xl font-bold">⭐ {csr.volunteered_hours}/5</p>
+                              </div>
+                            )}
+                            {csr.completion_date && (
+                              <div>
+                                <p className="text-green-700 font-medium">Completion Date</p>
+                                <p className="text-green-900">{formatDate(csr.completion_date)}</p>
                               </div>
                             )}
                           </div>
-                          
-                          {csr.completion_date && (
-                            <div className="text-sm">
-                              <p className="text-green-700 font-medium">Completion Date</p>
-                              <p className="text-green-900">{formatDate(csr.completion_date)}</p>
-                            </div>
-                          )}
+
 
                           {csr.notes && (
-                            <div className="text-sm">
-                              <p className="text-green-700 font-medium">CSR Notes</p>
+                            <div className="text-sm bg-white p-3 rounded border border-green-100">
+                              <p className="text-green-700 font-medium mb-1">📝 CSR Notes</p>
                               <p className="text-green-900 italic">"{csr.notes}"</p>
                             </div>
                           )}
 
                           {csr.feedback_from_pin && (
-                            <div className="text-sm">
-                              <p className="text-green-700 font-medium">Your Feedback</p>
-                              <p className="text-green-900 italic">"{csr.feedback_from_pin}"</p>
+                            <div className="text-sm bg-yellow-50 p-3 rounded border border-yellow-200">
+                              <p className="text-yellow-800 font-medium mb-1">💬 Your Feedback</p>
+                              <p className="text-yellow-900 italic">"{csr.feedback_from_pin}"</p>
                             </div>
                           )}
 
                           {!csr.feedback_from_pin && (
-                            <div className="mt-2">
-                              <button
-                                onClick={() => router.push(`/pin/request/${match.id}?action=feedback`)}
-                                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                              >
-                                + Add Feedback for CSR
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => router.push(`/pin/request/${match.id}?action=feedback`)}
+                              className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium py-2 px-4 border border-blue-300 rounded-lg hover:bg-blue-50 transition"
+                            >
+                              + Add Feedback for {csr.csr_user?.full_name || 'this CSR'}
+                            </button>
                           )}
                         </div>
                       ))}
@@ -323,12 +387,14 @@ export default function CompletedMatches() {
                         <p className="font-medium">{match.priority}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500">Views</p>
+                        <p className="text-gray-500">CSR Views</p>
                         <p className="font-medium">👁️ {match.view_count || 0}</p>
+                        <p className="text-xs text-gray-500 mt-1">Total times CSR reps viewed this request</p>
                       </div>
                       <div>
-                        <p className="text-gray-500">Shortlists</p>
+                        <p className="text-gray-500">CSR Shortlists</p>
                         <p className="font-medium">⭐ {match.shortlist_count || 0}</p>
+                        <p className="text-xs text-gray-500 mt-1">Number of CSR reps who shortlisted this request</p>
                       </div>
                     </div>
                   </div>

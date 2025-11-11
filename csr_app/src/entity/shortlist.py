@@ -59,7 +59,7 @@ class Shortlist:
         self.request_id: Optional[int] = None
         self.status: str = Shortlist.STATUS_SHORTLISTED
         self.notes: Optional[str] = None
-        self.volunteered_hours: Optional[float] = None
+        self.volunteer_rating: Optional[float] = None
         self.completion_date: Optional[str] = None
         self.feedback_from_pin: Optional[str] = None
         self.shortlisted_at: Optional[str] = None
@@ -95,7 +95,7 @@ class Shortlist:
         self.request_id = data.get('request_id')
         self.status = data.get('status', Shortlist.STATUS_SHORTLISTED)
         self.notes = data.get('notes')
-        self.volunteered_hours = data.get('volunteered_hours')
+        self.volunteer_rating = data.get('volunteer_rating')
         self.completion_date = data.get('completion_date')
         self.feedback_from_pin = data.get('feedback_from_pin')
         self.shortlisted_at = data.get('shortlisted_at')
@@ -218,7 +218,7 @@ class Shortlist:
             update_data = {
                 'status': self.status,
                 'notes': self.notes,
-                'volunteered_hours': self.volunteered_hours,
+                'volunteer_rating': self.volunteer_rating,
                 'completion_date': self.completion_date,
                 'feedback_from_pin': self.feedback_from_pin,
                 'updated_at': datetime.now().isoformat()
@@ -307,12 +307,12 @@ class Shortlist:
         self.status = Shortlist.STATUS_IN_PROGRESS
         return self.save()
     
-    def mark_completed(self, volunteered_hours: float = None, feedback: str = None) -> bool:
+    def mark_completed(self, volunteer_rating: float = None, feedback: str = None) -> bool:
         """
         Mark this shortlist item as completed
         
         Args:
-            volunteered_hours: Hours volunteered
+            volunteer_rating: rating 
             feedback: Feedback from PIN user
             
         Returns:
@@ -320,9 +320,8 @@ class Shortlist:
         """
         self.status = Shortlist.STATUS_COMPLETED
         self.completion_date = datetime.now().isoformat()
-        if volunteered_hours is not None:
-            self.volunteered_hours = volunteered_hours
-        if feedback:
+        if volunteer_rating is not None:
+            self.volunteered_rating = volunteer_rating
             self.feedback_from_pin = feedback
         return self.save()
     
@@ -338,7 +337,7 @@ class Shortlist:
             'request_id': self.request_id,
             'status': self.status,
             'notes': self.notes,
-            'volunteered_hours': self.volunteered_hours,
+            'volunteered_rating': self.volunteer_rating,
             'completion_date': self.completion_date,
             'feedback_from_pin': self.feedback_from_pin,
             'shortlisted_at': self.shortlisted_at,
@@ -488,7 +487,9 @@ class Shortlist:
     def search(cls,
                csr_user_id: int = None,
                request_id: int = None,
-               status: str = None) -> List['Shortlist']:
+               status: str = None,
+               limit: int = None,
+               offset: int = None) -> List['Shortlist']:
         """
         Factory method: Search shortlist entries by multiple criteria
         
@@ -496,6 +497,8 @@ class Shortlist:
             csr_user_id: Filter by CSR user
             request_id: Filter by request
             status: Filter by status
+            limit: Maximum number of results (for pagination)
+            offset: Number of results to skip (for pagination)
             
         Returns:
             List of Shortlist objects matching criteria
@@ -509,6 +512,15 @@ class Shortlist:
             query = query.eq('request_id', request_id)
         if status:
             query = query.eq('status', status)
+        
+        # Apply pagination at database level
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+        
+        # Order by most recent first
+        query = query.order('updated_at', desc=True)
         
         result = execute_with_retry(lambda: query.execute())
         

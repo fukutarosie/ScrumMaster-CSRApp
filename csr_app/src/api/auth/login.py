@@ -11,7 +11,6 @@ def login():
     """User login endpoint"""
     try:
         payload = request.get_json()
-        # TRUE OOP: Create controller object, call instance method
         controller = LoginController(payload)
         response, status = controller.execute()
         return jsonify(response), status

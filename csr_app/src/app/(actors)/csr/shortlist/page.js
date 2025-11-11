@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import Header from '../../../components/Header';
 import { useToast } from '../../../components/ToastProvider';
 
 export default function MyShortlist() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [shortlist, setShortlist] = useState([]);
@@ -20,7 +21,7 @@ export default function MyShortlist() {
   const [endDate, setEndDate] = useState('');
   const [dateError, setDateError] = useState('');
   const [editingItem, setEditingItem] = useState(null);
-  const [editForm, setEditForm] = useState({ status: '', notes: '', volunteered_hours: '' });
+  const [editForm, setEditForm] = useState({ status: '', notes: '' });
 
   const getToken = () => localStorage.getItem('token');
 
@@ -40,10 +41,17 @@ export default function MyShortlist() {
     }
 
     setUser(parsedUser);
-    fetchShortlist();
+    
+    // Check if tab parameter is provided in URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setStatusFilter(tabParam);
+    }
+    
+    // Don't fetch here - let the statusFilter useEffect handle it
     fetchServiceTypes();
     setLoading(false);
-  }, [router]);
+  }, [router, searchParams]);
 
   const fetchServiceTypes = async () => {
     try {
@@ -60,9 +68,14 @@ export default function MyShortlist() {
     }
   };
 
-  const fetchShortlist = async () => {
+  const fetchShortlist = async (retryCount = 0) => {
     try {
       const token = getToken();
+      if (!token) {
+        console.error('No auth token available');
+        return;
+      }
+      
       const params = statusFilter ? { status: statusFilter } : {};
       
       const response = await axios.get('http://localhost:5000/api/shortlist', {
@@ -76,11 +89,22 @@ export default function MyShortlist() {
       if (actualData && actualData.success) {
         const items = actualData.data || [];
         setShortlist(items);
+        console.log(`[DEBUG] Shortlist loaded: ${items.length} items`);
       } else {
-        toast.error(actualData?.message || 'Failed to load shortlist');
+        // Only show error if not retrying
+        if (retryCount > 0) {
+          toast.error(actualData?.message || 'Failed to load shortlist');
+        }
       }
     } catch (err) {
       console.error('Failed to fetch shortlist:', err);
+      // Retry once silently if it's a network/socket error
+      if (retryCount === 0 && (err.code === 'ECONNRESET' || err.message?.includes('socket') || err.message?.includes('Network Error'))) {
+        console.log('[DEBUG] Retrying shortlist fetch due to network error...');
+        setTimeout(() => fetchShortlist(1), 500);
+        return;
+      }
+      // Only show toast on final failure
       toast.error('Failed to load shortlist');
     }
   };
@@ -141,8 +165,7 @@ export default function MyShortlist() {
     setEditingItem(item.id);
     setEditForm({
       status: item.status,
-      notes: item.notes || '',
-      volunteered_hours: item.volunteered_hours || ''
+      notes: item.notes || ''
     });
   };
 
@@ -150,9 +173,10 @@ export default function MyShortlist() {
     try {
       const payload = {
         status: editForm.status,
-        notes: editForm.notes || undefined,
-        volunteered_hours: editForm.volunteered_hours ? parseFloat(editForm.volunteered_hours) : undefined
+        notes: editForm.notes || undefined
       };
+
+      console.log(`[DEBUG] Updating shortlist ${shortlistId} to status: ${editForm.status}`);
 
       const response = await axios.patch(
         `http://localhost:5000/api/shortlist/${shortlistId}/status`,
@@ -161,6 +185,7 @@ export default function MyShortlist() {
       );
 
       if (response.data.success) {
+        console.log(`[DEBUG] Update successful. Current tab: ${statusFilter || 'ALL'}. Refetching...`);
         toast.success('Status updated successfully');
         setEditingItem(null);
         fetchShortlist();
@@ -230,9 +255,10 @@ export default function MyShortlist() {
 
   useEffect(() => {
     if (user) {
+      console.log(`[DEBUG] Fetching shortlist for status: ${statusFilter || 'ALL'}`);
       fetchShortlist();
     }
-  }, [statusFilter]);
+  }, [user, statusFilter]);
 
   if (loading) {
     return (
@@ -452,9 +478,36 @@ export default function MyShortlist() {
                 ) : (
                   // View Mode
                   <div>
-                    <div className="flex justify-between items-start mb-4">
+                    <div className="flex flex-col md:flex-row gap-4 mb-4">
+                      {/* Request Image */}
+                      {item.requests?.image_url && (
+                        <div className="w-full md:w-48 h-48 flex-shrink-0">
+                          <img
+                            src={`http://localhost:5000${item.requests.image_url}`}
+                            alt={item.requests?.title}
+                            className="w-full h-full object-cover rounded-lg"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.requests?.title}</h3>
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{item.requests?.title}</h3>
+                          {/* Show status badge in "All" tab to distinguish items */}
+                          {!statusFilter && (
+                            <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                              item.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                              item.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
+                              item.status === 'SHORTLISTED' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {item.status}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 mb-3">{item.requests?.description}</p>
                         
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -471,6 +524,11 @@ export default function MyShortlist() {
                             <p className="text-gray-600">{item.requests?.status}</p>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
 
                         {item.notes && (
                           <div className="mt-3 p-3 bg-gray-50 rounded">
@@ -478,11 +536,30 @@ export default function MyShortlist() {
                           </div>
                         )}
 
-                        {item.volunteered_hours && (
-                          <div className="mt-2">
-                            <span className="text-sm font-medium text-green-600">
-                              ⏰ {item.volunteered_hours} hours volunteered
-                            </span>
+                        {item.status === 'COMPLETED' && (
+                          <div className="mt-3 space-y-2">
+                            {item.completion_date && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-green-600">
+                                  ✅ Completed on: {new Date(item.completion_date).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {item.volunteered_hours && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-yellow-600">
+                                  ⭐ Rating: {item.volunteered_hours}/5
+                                </span>
+                              </div>
+                            )}
+                            
+                            {item.feedback_from_pin && (
+                              <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p className="text-xs font-semibold text-yellow-800 mb-1">💬 Feedback from PIN User:</p>
+                                <p className="text-sm text-yellow-900">{item.feedback_from_pin}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

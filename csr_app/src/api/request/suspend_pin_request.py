@@ -15,7 +15,8 @@ suspend_pin_request_boundary = Blueprint(
 def suspend_request(request_id):
     """Suspend a request (mark as no longer needed)"""
     auth_token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    payload = request.get_json() or {}
+    # Accept empty or non-JSON bodies without error
+    payload = request.get_json(silent=True) or {}
     
     controller = SuspendPINRequestController(auth_token, request_id, payload)
     response, status = controller.execute()

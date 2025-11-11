@@ -46,12 +46,18 @@ class GetRequestAnalyticsController:
                 return (ResponseHelpers.error_response('You can only view analytics for your own requests', 403), 403)
             
             # Build analytics data
+            created_at_value = self.request.created_at
+            if hasattr(created_at_value, 'isoformat'):
+                created_at_formatted = created_at_value.isoformat()
+            else:
+                created_at_formatted = created_at_value
+            
             analytics = {
                 'request_id': self.request.id,
                 'view_count': self.request.view_count or 0,
                 'shortlist_count': self.request.shortlist_count or 0,
                 'status': self.request.status,
-                'created_at': self.request.created_at.isoformat() if self.request.created_at else None
+                'created_at': created_at_formatted
             }
             
             return (ResponseHelpers.success_response(
