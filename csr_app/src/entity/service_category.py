@@ -280,12 +280,13 @@ class ServiceCategory:
             List of ServiceCategory objects matching the keyword
         """
         supabase = get_supabase()
-        search_term = f"%{keyword}%"
+
+        search_pattern = f"%{keyword}%"
 
         result = execute_with_retry(
             lambda: supabase.table('service_category')
             .select('*')
-            .or_(f"name.ilike.{search_term},description.ilike.{search_term}")
+            .or_(f'name.ilike."{search_pattern}",description.ilike."{search_pattern}"')
             .order('name')
             .execute()
         )

@@ -79,9 +79,9 @@ export default function PlatformDashboard() {
         axios.get(`${API_URL}/api/platform/categories`, getAuthHeaders()),
         axios.get(`${API_URL}/api/platform/reports/daily`, getAuthHeaders())
       ]);
-      
+
       setStats({
-        totalCategories: categoriesRes.data.data?.length || 0,
+        totalCategories: categoriesRes.data.data?.categories?.length || categoriesRes.data.data?.total || 0,
         activeUsers: dailyReportRes.data.data?.total_active_users || 0,
         totalRequests: dailyReportRes.data.data?.total_requests || 0
       });
@@ -97,7 +97,8 @@ export default function PlatformDashboard() {
       const response = await axios.get(`${API_URL}/api/platform/categories`, getAuthHeaders());
       if (response.data.success) {
         const data = response.data.data;
-        setCategories(Array.isArray(data) ? data : []);
+        const categoriesArray = data?.categories || (Array.isArray(data) ? data : []);
+        setCategories(categoriesArray);
       } else {
         setCategories([]);
         setCategoryError(response.data.message || 'Failed to fetch categories');
@@ -125,7 +126,8 @@ export default function PlatformDashboard() {
       );
       if (response.data.success) {
         const data = response.data.data;
-        setCategories(Array.isArray(data) ? data : []);
+        const categoriesArray = data?.categories || (Array.isArray(data) ? data : []);
+        setCategories(categoriesArray);
       } else {
         setCategories([]);
         setCategoryError(response.data.message || 'Failed to search categories');
