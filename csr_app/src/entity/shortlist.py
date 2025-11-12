@@ -100,7 +100,8 @@ class Shortlist:
         self.feedback_from_pin = data.get('feedback_from_pin')
         self.shortlisted_at = data.get('shortlisted_at')
         self.updated_at = data.get('updated_at')
-        self.requests = data.get('requests')  # Store joined request data
+        joined_request = data.get('request') or data.get('requests')
+        self.requests = joined_request  # Store joined request data
     
     # ============================================================================
     # VALIDATION METHODS (Instance methods)
@@ -342,7 +343,8 @@ class Shortlist:
             'feedback_from_pin': self.feedback_from_pin,
             'shortlisted_at': self.shortlisted_at,
             'updated_at': self.updated_at,
-            'requests': self.requests  # Include joined request data
+            'requests': self.requests,  # Include joined request data
+            'request': self.requests
         }
 
     def get_csr_user(self):

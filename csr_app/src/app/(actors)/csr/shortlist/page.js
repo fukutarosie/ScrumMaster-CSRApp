@@ -11,6 +11,7 @@ export default function MyShortlist() {
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchingShortlist, setFetchingShortlist] = useState(false);
   const [shortlist, setShortlist] = useState([]);
   const [serviceTypes, setServiceTypes] = useState([]);
   const toast = useToast();
@@ -22,8 +23,24 @@ export default function MyShortlist() {
   const [dateError, setDateError] = useState('');
   const [editingItem, setEditingItem] = useState(null);
   const [editForm, setEditForm] = useState({ status: '', notes: '' });
+  const [confirmModal, setConfirmModal] = useState({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
 
   const getToken = () => localStorage.getItem('token');
+
+  const closeConfirmModal = () => setConfirmModal({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
+
+  const openConfirmModal = ({ title, description, confirmLabel, onConfirm }) => {
+    setConfirmModal({
+      open: true,
+      title,
+      description,
+      confirmLabel,
+      onConfirm: () => {
+        onConfirm();
+        closeConfirmModal();
+      }
+    });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -46,6 +63,9 @@ export default function MyShortlist() {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
       setStatusFilter(tabParam);
+    } else {
+      // Default to SHORTLISTED tab since All tab is removed
+      setStatusFilter('SHORTLISTED');
     }
     
     // Don't fetch here - let the statusFilter useEffect handle it
@@ -69,6 +89,7 @@ export default function MyShortlist() {
   };
 
   const fetchShortlist = async (retryCount = 0) => {
+    setFetchingShortlist(true);
     try {
       const token = getToken();
       if (!token) {
@@ -106,29 +127,37 @@ export default function MyShortlist() {
       }
       // Only show toast on final failure
       toast.error('Failed to load shortlist');
+    } finally {
+      setFetchingShortlist(false);
     }
   };
 
-  const handleRemove = async (shortlistId) => {
-    if (!confirm('Are you sure you want to remove this request from your shortlist?')) return;
+  const handleRemove = (item) => {
+    const isInProgress = item.status === 'IN_PROGRESS';
+    openConfirmModal({
+      title: isInProgress ? 'Remove opportunity you accepted?' : 'Remove from shortlist?',
+      description: isInProgress
+        ? 'This request is currently In Progress. Removing it will abandon your commitment.'
+        : 'This will remove the request from your shortlist. You can add it again later from Browse.',
+      confirmLabel: isInProgress ? 'Remove Anyway' : 'Remove',
+      onConfirm: () => executeRemove(item.id)
+    });
+  };
 
+  const executeRemove = async (shortlistId) => {
     try {
       const response = await axios.delete(
         `http://localhost:5000/api/shortlist/${shortlistId}`,
         { headers: { 'Authorization': `Bearer ${getToken()}` } }
       );
 
-      // Handle responses that might be double-wrapped (array)
       const responseData = Array.isArray(response.data) ? response.data[0] : response.data;
       const wasRemoved = responseData?.success ?? (response.status === 200 || response.status === 204);
 
       if (wasRemoved) {
         toast.success('Removed from shortlist successfully');
-        // Optimistically remove from local state for instant UI feedback
         setShortlist((prev) => prev.filter((item) => item.id !== shortlistId));
-        // Close edit mode if the current item was being edited
         setEditingItem((prev) => (prev === shortlistId ? null : prev));
-        // Refresh shortlist in background to ensure data consistency
         fetchShortlist();
         return;
       }
@@ -140,9 +169,16 @@ export default function MyShortlist() {
     }
   };
 
-  const handleTakeOpportunity = async (shortlistId) => {
-    if (!confirm('Do you want to take this opportunity? This will mark it as In Progress.')) return;
+  const handleTakeOpportunity = (item) => {
+    openConfirmModal({
+      title: 'Accept this opportunity?',
+      description: 'This request will be marked as In Progress. The PIN user will be notified that you confirmed acceptance.',
+      confirmLabel: 'Accept Opportunity',
+      onConfirm: () => executeTakeOpportunity(item.id)
+    });
+  };
 
+  const executeTakeOpportunity = async (shortlistId) => {
     try {
       const payload = { status: 'IN_PROGRESS' };
       const response = await axios.patch(
@@ -153,11 +189,15 @@ export default function MyShortlist() {
 
       if (response.data.success) {
         toast.success('Marked as In Progress');
+        // Switch to IN_PROGRESS tab after accepting
+        setStatusFilter('IN_PROGRESS');
         fetchShortlist();
       }
     } catch (err) {
       console.error('Failed to take opportunity:', err);
-      toast.error('Failed to take opportunity');
+      console.error('Full error object:', err.response?.data);
+      const errorMsg = err.response?.data?.message || 'Failed to take opportunity';
+      toast.error(errorMsg);
     }
   };
 
@@ -221,6 +261,42 @@ export default function MyShortlist() {
     
     return matchesQuery && matchesServiceType && matchesDateRange;
   });
+
+  const emptyStateCopy = (() => {
+    if (statusFilter === 'IN_PROGRESS') {
+      return {
+        emoji: '🚀',
+        title: 'No Opportunities Taken Yet',
+        description: 'Accept a shortlisted request to move it into progress.',
+        showBrowse: false
+      };
+    }
+
+    if (statusFilter === 'COMPLETED') {
+      return {
+        emoji: '🎉',
+        title: 'No Completed Opportunities Yet',
+        description: 'Once a PIN confirms completion, the request will appear here.',
+        showBrowse: false
+      };
+    }
+
+    if (statusFilter === 'SHORTLISTED') {
+      return {
+        emoji: '⭐',
+        title: 'No Shortlisted Requests Yet',
+        description: 'Browse PIN requests and shortlist the ones you want to help with.',
+        showBrowse: true
+      };
+    }
+
+    return {
+      emoji: '📋',
+      title: 'No Items in Shortlist',
+      description: 'Start browsing PIN requests to add to your shortlist',
+      showBrowse: true
+    };
+  })();
 
   const clearFilters = () => {
     setSearchServiceType('');
@@ -308,12 +384,6 @@ export default function MyShortlist() {
         {/* Filter Tabs */}
         <div className="bg-white rounded-lg shadow mb-6">
           <div className="flex border-b">
-            <button
-              onClick={() => handleFilterChange('')}
-              className={`flex-1 px-6 py-3 text-sm font-medium ${!statusFilter ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              All ({shortlist.length})
-            </button>
             <button
               onClick={() => handleFilterChange('SHORTLISTED')}
               className={`flex-1 px-6 py-3 text-sm font-medium ${statusFilter === 'SHORTLISTED' ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -407,17 +477,24 @@ export default function MyShortlist() {
         </div>
 
         {/* Shortlist Items */}
-        {filteredShortlist.length === 0 ? (
+        {fetchingShortlist ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-6xl mb-4">📋</div>
-            <h3 className="text-xl font-semibold mb-2">No Items in Shortlist</h3>
-            <p className="text-gray-600 mb-4">Start browsing PIN requests to add to your shortlist</p>
-            <button
-              onClick={() => router.push('/csr/browse')}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
-              Browse Requests
-            </button>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        ) : filteredShortlist.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-12 text-center">
+            <div className="text-6xl mb-4">{emptyStateCopy.emoji}</div>
+            <h3 className="text-xl font-semibold mb-2">{emptyStateCopy.title}</h3>
+            <p className="text-gray-600 mb-4">{emptyStateCopy.description}</p>
+            {emptyStateCopy.showBrowse && (
+              <button
+                onClick={() => router.push('/csr/browse')}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Browse Requests
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -583,12 +660,18 @@ export default function MyShortlist() {
                       ) : (
                         <div className="flex gap-2">
                           {item.status === 'SHORTLISTED' && (
-                            <button
-                              onClick={() => handleTakeOpportunity(item.id)}
-                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                            >
-                              🚀 Accept Opportunity
-                            </button>
+                            item.requests?.active_assignment && item.requests.active_assignment.csr_user_id !== user?.id ? (
+                              <div className="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-sm">
+                                ⚠️ Already accepted by another CSR
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleTakeOpportunity(item)}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                              >
+                                🚀 Accept Opportunity
+                              </button>
+                            )
                           )}
                           {item.status === 'IN_PROGRESS' && (
                             <button
@@ -599,7 +682,7 @@ export default function MyShortlist() {
                             </button>
                           )}
                           <button
-                            onClick={() => handleRemove(item.id)}
+                            onClick={() => handleRemove(item)}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                           >
                             🗑️ Remove
@@ -614,6 +697,29 @@ export default function MyShortlist() {
           </div>
         )}
       </main>
+
+      {confirmModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{confirmModal.title}</h3>
+            <p className="text-sm text-gray-600 mb-6">{confirmModal.description}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeConfirmModal}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmModal.onConfirm}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                {confirmModal.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -49,7 +49,24 @@ class GetShortlistController:
                 status=status_filter
             )
             paged_entries = shortlist_entries[offset: offset + limit] if shortlist_entries else []
-            shortlist_items = [entry.to_dict() for entry in paged_entries]
+            shortlist_items = []
+            
+            for entry in paged_entries:
+                item_dict = entry.to_dict()
+                # Enrich with active assignment info if request data exists
+                if item_dict.get('requests') and entry.request_id:
+                    active_assignment = Shortlist.active_assignment_for_request(entry.request_id)
+                    if active_assignment:
+                        # Add active_assignment to the request data
+                        item_dict['requests']['active_assignment'] = {
+                            'id': active_assignment.id,
+                            'csr_user_id': active_assignment.csr_user_id,
+                            'status': active_assignment.status
+                        }
+                        # Also add to 'request' key for consistency
+                        if item_dict.get('request'):
+                            item_dict['request']['active_assignment'] = item_dict['requests']['active_assignment']
+                shortlist_items.append(item_dict)
             
             print(f"[DEBUG] Shortlist controller - User ID: {csr_user_id}, Status filter: {status_filter}, Items found: {len(shortlist_items)}")
             if shortlist_items:
