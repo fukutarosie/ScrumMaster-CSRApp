@@ -38,15 +38,15 @@ class CreateServiceCategoryController:
     def validate_request_data(self) -> bool:
         """
         Validate request data
-        
+
         Returns:
             True if valid, False otherwise (errors stored in self.errors)
         """
         if not self.request_data:
             self.errors.append("Request body is required")
             return False
-        
-        required_fields = ['name']
+
+        required_fields = ['service_name']
         is_valid, error_msg, missing_fields = RequestHelpers.validate_required_fields(
             self.request_data, required_fields
         )
@@ -56,38 +56,32 @@ class CreateServiceCategoryController:
             else:
                 self.errors.append(error_msg)
             return False
-        
-        name = self.request_data.get('name', '').strip()
-        if not name or len(name) < 2:
-            self.errors.append('Category name must be at least 2 characters')
-        
-        if len(name) > 100:
-            self.errors.append('Category name must not exceed 100 characters')
-        
-        description = self.request_data.get('description', '')
-        if description and len(description) > 500:
-            self.errors.append('Category description must not exceed 500 characters')
-        
+
+        service_name = self.request_data.get('service_name', '').strip()
+        if not service_name or len(service_name) < 2:
+            self.errors.append('Service name must be at least 2 characters')
+
+        if len(service_name) > 100:
+            self.errors.append('Service name must not exceed 100 characters')
+
         return len(self.errors) == 0
-    
+
     def sanitize_data(self) -> None:
         """
         Sanitize input data and store in self.sanitized_data
         """
         self.sanitized_data = {
-            'name': self.request_data.get('name', '').strip(),
-            'description': self.request_data.get('description', '').strip() if self.request_data.get('description') else None
+            'service_name': self.request_data.get('service_name', '').strip()
         }
-    
+
     def create_category_object(self) -> None:
         """
         Create ServiceCategory object from sanitized data
         Stores ServiceCategory object in self.category (data in memory)
         """
         self.category = ServiceCategory()
-        
-        self.category.name = self.sanitized_data['name']
-        self.category.description = self.sanitized_data['description']
+
+        self.category.service_name = self.sanitized_data['service_name']
     
     def execute(self) -> Tuple[Dict, int]:
         """

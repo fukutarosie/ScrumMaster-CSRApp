@@ -19,7 +19,7 @@ export default function PlatformDashboard() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+  const [categoryForm, setCategoryForm] = useState({ service_name: '' });
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   
@@ -151,7 +151,7 @@ export default function PlatformDashboard() {
       );
       if (response.data.success) {
         setIsCreateModalOpen(false);
-        setCategoryForm({ name: '', description: '' });
+        setCategoryForm({ service_name: '' });
         fetchCategories();
         fetchStats();
       }
@@ -172,7 +172,7 @@ export default function PlatformDashboard() {
       if (response.data.success) {
         setIsEditModalOpen(false);
         setSelectedCategory(null);
-        setCategoryForm({ name: '', description: '' });
+        setCategoryForm({ service_name: '' });
         fetchCategories();
       }
     } catch (error) {
@@ -200,7 +200,7 @@ export default function PlatformDashboard() {
 
   const openEditModal = (category) => {
     setSelectedCategory(category);
-    setCategoryForm({ name: category.name, description: category.description });
+    setCategoryForm({ service_name: category.service_name });
     setIsEditModalOpen(true);
   };
 
@@ -398,7 +398,7 @@ export default function PlatformDashboard() {
                 <h2 className="text-xl font-bold text-gray-900">Service Categories</h2>
                 <button
                   onClick={() => {
-                    setCategoryForm({ name: '', description: '' });
+                    setCategoryForm({ service_name: '' });
                     setIsCreateModalOpen(true);
                   }}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
@@ -463,8 +463,7 @@ export default function PlatformDashboard() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
@@ -473,10 +472,7 @@ export default function PlatformDashboard() {
                       {categories.map((category) => (
                         <tr key={category.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-600">{category.description}</div>
+                            <div className="text-sm font-medium text-gray-900">{category.service_name}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-600">
@@ -617,26 +613,17 @@ export default function PlatformDashboard() {
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Create New Category</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Create New Service Type</h3>
             <form onSubmit={handleCreateCategory}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
                   <input
                     type="text"
                     required
-                    value={categoryForm.name}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={categoryForm.description}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                    placeholder="e.g., Pet Care, Grocery Shopping"
+                    value={categoryForm.service_name}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, service_name: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
@@ -646,7 +633,7 @@ export default function PlatformDashboard() {
                   type="button"
                   onClick={() => {
                     setIsCreateModalOpen(false);
-                    setCategoryForm({ name: '', description: '' });
+                    setCategoryForm({ service_name: '' });
                     setCategoryError('');
                   }}
                   className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium"
@@ -668,26 +655,16 @@ export default function PlatformDashboard() {
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Category</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Service Type</h3>
             <form onSubmit={handleUpdateCategory}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
                   <input
                     type="text"
                     required
-                    value={categoryForm.name}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={categoryForm.description}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                    value={categoryForm.service_name}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, service_name: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
@@ -698,7 +675,7 @@ export default function PlatformDashboard() {
                   onClick={() => {
                     setIsEditModalOpen(false);
                     setSelectedCategory(null);
-                    setCategoryForm({ name: '', description: '' });
+                    setCategoryForm({ service_name: '' });
                     setCategoryError('');
                   }}
                   className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium"
@@ -720,9 +697,9 @@ export default function PlatformDashboard() {
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Delete Category</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Delete Service Type</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete <strong>{selectedCategory?.name}</strong>? This action cannot be undone.
+              Are you sure you want to delete <strong>{selectedCategory?.service_name}</strong>? This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button

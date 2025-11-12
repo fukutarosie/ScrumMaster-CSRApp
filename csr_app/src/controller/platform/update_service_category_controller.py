@@ -34,41 +34,35 @@ class UpdateServiceCategoryController:
     def validate_request_data(self) -> bool:
         """
         Validate request data
-        
+
         Returns:
             True if valid, False otherwise (errors stored in self.errors)
         """
         if not self.request_data:
             self.errors.append("Request body is required")
             return False
-        
-        name = self.request_data.get('name', '').strip()
-        if name:
-            if len(name) < 2:
-                self.errors.append('Category name must be at least 2 characters')
-            if len(name) > 100:
-                self.errors.append('Category name must not exceed 100 characters')
-        
-        description = self.request_data.get('description', '')
-        if description and len(description) > 500:
-            self.errors.append('Category description must not exceed 500 characters')
-        
+
+        service_name = self.request_data.get('service_name', '').strip()
+        if service_name:
+            if len(service_name) < 2:
+                self.errors.append('Service name must be at least 2 characters')
+            if len(service_name) > 100:
+                self.errors.append('Service name must not exceed 100 characters')
+
         return len(self.errors) == 0
-    
+
     def sanitize_data(self) -> None:
         """
         Sanitize input data and store in self.sanitized_data
         """
         self.sanitized_data = {}
-        if 'name' in self.request_data:
-            self.sanitized_data['name'] = self.request_data.get('name', '').strip()
-        if 'description' in self.request_data:
-            self.sanitized_data['description'] = self.request_data.get('description', '').strip() if self.request_data.get('description') else None
-    
+        if 'service_name' in self.request_data:
+            self.sanitized_data['service_name'] = self.request_data.get('service_name', '').strip()
+
     def load_category(self) -> bool:
         """
         Load existing category from database
-        
+
         Returns:
             True if found, False otherwise
         """
@@ -77,15 +71,13 @@ class UpdateServiceCategoryController:
             self.errors.append(f"Category with ID {self.category_id} not found")
             return False
         return True
-    
+
     def update_category_object(self) -> None:
         """
         Update ServiceCategory object with sanitized data
         """
-        if 'name' in self.sanitized_data:
-            self.category.name = self.sanitized_data['name']
-        if 'description' in self.sanitized_data:
-            self.category.description = self.sanitized_data['description']
+        if 'service_name' in self.sanitized_data:
+            self.category.service_name = self.sanitized_data['service_name']
     
     def execute(self) -> Tuple[Dict, int]:
         """
@@ -125,12 +117,20 @@ class UpdateServiceCategoryController:
                         details={'field': 'name'}
                     )
                 else:
+                    if 'already exists' in error_msg.lower():
+                        return ResponseHelpers.error_response(
+                            message=error_msg,
+                            error_code='CATEGORY_EXISTS',
+                            status_code=409,
+                            details={'field': 'service_name'}
+                        )
+
                     return ResponseHelpers.error_response(
                         message=error_msg,
                         error_code='VALIDATION_ERROR',
                         status_code=400
                     )
-            
+
             return ResponseHelpers.success_response(
                 data=self.category.to_dict(),
                 message='Service category updated successfully',

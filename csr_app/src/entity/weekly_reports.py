@@ -143,7 +143,7 @@ class WeeklyReports:
         
         try:
             result = execute_with_retry(
-                lambda: supabase.table('service_category')
+                lambda: supabase.table('service_types')
                 .select('id', count='exact')
                 .execute()
             )
@@ -151,5 +151,5 @@ class WeeklyReports:
         except Exception as e:
             print(f"[WARNING] Failed to get category count: {str(e)}")
             report.total_categories = 0
-        
+
         return report

@@ -148,7 +148,7 @@ class MonthlyReports:
         
         try:
             result = execute_with_retry(
-                lambda: supabase.table('service_category')
+                lambda: supabase.table('service_types')
                 .select('id', count='exact')
                 .execute()
             )

@@ -1,6 +1,6 @@
 """
 ServiceCategory Entity Class - TRUE OOP Implementation
-Holds service category data in memory and performs operations on itself
+Manages service types from the existing 'service_types' table
 """
 
 from typing import Dict, List, Optional
@@ -12,6 +12,10 @@ class ServiceCategory:
     """
     ServiceCategory Entity - TRUE OOP Implementation
 
+    This class manages the existing 'service_types' table that PINs use
+    when creating requests. Platform Management can now manage these
+    service types that are already in use by the system.
+
     This class implements proper OOP:
     - Objects hold data in memory (instance variables)
     - Instance methods do the actual work (not wrappers)
@@ -20,12 +24,11 @@ class ServiceCategory:
 
     Usage:
         category = ServiceCategory()
-        category.name = 'Environmental Conservation'
-        category.description = 'Activities related to environmental protection'
+        category.service_name = 'Environmental Conservation'
         category.save()
 
         category = ServiceCategory.find_by_id(1)
-        category.description = 'Updated description'
+        category.service_name = 'Updated name'
         category.save()
     """
 
@@ -39,14 +42,12 @@ class ServiceCategory:
 
         Example:
             category = ServiceCategory(category_id=1)
-            category = ServiceCategory(category_data={'id': 1, 'name': 'Education', ...})
+            category = ServiceCategory(category_data={'id': 1, 'service_name': 'Education', ...})
             category = ServiceCategory()
         """
         self.id: Optional[int] = None
-        self.name: Optional[str] = None
-        self.description: Optional[str] = None
+        self.service_name: Optional[str] = None
         self.created_at: Optional[str] = None
-        self.updated_at: Optional[str] = None
 
         if category_id is not None:
             self._load_from_id(category_id)
@@ -57,7 +58,7 @@ class ServiceCategory:
         """Load category data from database by ID (private method)"""
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_category')
+            lambda: supabase.table('service_types')
             .select('*')
             .eq('id', category_id)
             .execute()
@@ -68,10 +69,8 @@ class ServiceCategory:
     def _load_from_dict(self, data: Dict) -> None:
         """Populate instance variables from dictionary (private method)"""
         self.id = data.get('id')
-        self.name = data.get('name')
-        self.description = data.get('description')
+        self.service_name = data.get('service_name')
         self.created_at = data.get('created_at')
-        self.updated_at = data.get('updated_at')
 
     def validate(self) -> tuple[bool, List[str]]:
         """
@@ -82,32 +81,29 @@ class ServiceCategory:
         """
         errors = []
 
-        if not self.name or len(self.name.strip()) < 2:
-            errors.append('Category name must be at least 2 characters')
+        if not self.service_name or len(self.service_name.strip()) < 2:
+            errors.append('Service name must be at least 2 characters')
 
-        if self.name and len(self.name) > 100:
-            errors.append('Category name must not exceed 100 characters')
-
-        if self.description and len(self.description) > 500:
-            errors.append('Category description must not exceed 500 characters')
+        if self.service_name and len(self.service_name) > 100:
+            errors.append('Service name must not exceed 100 characters')
 
         return len(errors) == 0, errors
 
     def check_uniqueness(self) -> tuple[bool, Optional[str]]:
         """
-        Check if category name already exists
+        Check if service name already exists
 
         Returns:
             Tuple of (is_unique, error_message)
         """
         supabase = get_supabase()
 
-        query = supabase.table('service_category').select('id').eq('name', self.name)
+        query = supabase.table('service_types').select('id').eq('service_name', self.service_name)
         if self.id:
             query = query.neq('id', self.id)
         result = execute_with_retry(lambda: query.execute())
         if result and result.data:
-            return False, f"Category name '{self.name}' already exists"
+            return False, f"Service name '{self.service_name}' already exists"
 
         return True, None
 
@@ -134,25 +130,22 @@ class ServiceCategory:
 
         if self.id:
             update_data = {
-                'name': self.name,
-                'description': self.description,
-                'updated_at': datetime.utcnow().isoformat()
+                'service_name': self.service_name
             }
 
             result = execute_with_retry(
-                lambda: supabase.table('service_category')
+                lambda: supabase.table('service_types')
                 .update(update_data)
                 .eq('id', self.id)
                 .execute()
             )
         else:
             insert_data = {
-                'name': self.name,
-                'description': self.description or ''
+                'service_name': self.service_name
             }
 
             result = execute_with_retry(
-                lambda: supabase.table('service_category')
+                lambda: supabase.table('service_types')
                 .insert(insert_data)
                 .execute()
             )
@@ -160,7 +153,6 @@ class ServiceCategory:
             if result and result.data:
                 self.id = result.data[0]['id']
                 self.created_at = result.data[0]['created_at']
-                self.updated_at = result.data[0].get('updated_at')
 
         return True
 
@@ -175,15 +167,15 @@ class ServiceCategory:
             ValueError: If category has no ID
         """
         if not self.id:
-            raise ValueError('Cannot delete category without ID')
+            raise ValueError('Cannot delete service type without ID')
 
         supabase = get_supabase()
 
-        print(f"[DEBUG] Attempting to delete category with ID: {self.id}")
+        print(f"[DEBUG] Attempting to delete service type with ID: {self.id}")
 
         try:
             result = execute_with_retry(
-                lambda: supabase.table('service_category')
+                lambda: supabase.table('service_types')
                 .delete()
                 .eq('id', self.id)
                 .execute()
@@ -193,14 +185,14 @@ class ServiceCategory:
             print(f"[DEBUG] Delete result.data: {result.data if result else 'None'}")
 
             if result and result.data:
-                print(f"[DEBUG] Successfully deleted category ID: {self.id}")
+                print(f"[DEBUG] Successfully deleted service type ID: {self.id}")
                 return True
             else:
-                print(f"[DEBUG] Delete returned no data for category ID: {self.id}")
+                print(f"[DEBUG] Delete returned no data for service type ID: {self.id}")
                 return False
 
         except Exception as e:
-            print(f"[ERROR] Failed to delete category ID {self.id}: {str(e)}")
+            print(f"[ERROR] Failed to delete service type ID {self.id}: {str(e)}")
             import traceback
             print(f"[ERROR] Traceback: {traceback.format_exc()}")
             raise
@@ -214,10 +206,8 @@ class ServiceCategory:
         """
         return {
             'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'service_name': self.service_name,
+            'created_at': self.created_at
         }
 
     @classmethod
@@ -233,7 +223,7 @@ class ServiceCategory:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_category')
+            lambda: supabase.table('service_types')
             .select('*')
             .eq('id', category_id)
             .execute()
@@ -246,19 +236,19 @@ class ServiceCategory:
     @classmethod
     def find_by_name(cls, name: str) -> Optional['ServiceCategory']:
         """
-        Factory method to find category by name
+        Factory method to find category by service name
 
         Args:
-            name: Category name to search for
+            name: Service name to search for
 
         Returns:
             ServiceCategory object or None if not found
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_category')
+            lambda: supabase.table('service_types')
             .select('*')
-            .eq('name', name)
+            .eq('service_name', name)
             .execute()
         )
 
@@ -276,9 +266,9 @@ class ServiceCategory:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_category')
+            lambda: supabase.table('service_types')
             .select('*')
-            .order('name')
+            .order('service_name')
             .execute()
         )
 
@@ -292,7 +282,7 @@ class ServiceCategory:
         Factory method to search categories by keyword
 
         Args:
-            keyword: Search keyword to match against name or description
+            keyword: Search keyword to match against service name
 
         Returns:
             List of ServiceCategory objects matching the keyword
@@ -301,35 +291,13 @@ class ServiceCategory:
 
         search_pattern = f"%{keyword}%"
 
-        # Search in name field
-        name_results = execute_with_retry(
-            lambda: supabase.table('service_category')
+        result = execute_with_retry(
+            lambda: supabase.table('service_types')
             .select('*')
-            .ilike('name', search_pattern)
+            .ilike('service_name', search_pattern)
             .execute()
         )
 
-        # Search in description field
-        desc_results = execute_with_retry(
-            lambda: supabase.table('service_category')
-            .select('*')
-            .ilike('description', search_pattern)
-            .execute()
-        )
-
-        # Combine results and remove duplicates
-        categories_dict = {}
-
-        if name_results and name_results.data:
-            for data in name_results.data:
-                categories_dict[data['id']] = cls(category_data=data)
-
-        if desc_results and desc_results.data:
-            for data in desc_results.data:
-                if data['id'] not in categories_dict:
-                    categories_dict[data['id']] = cls(category_data=data)
-
-        # Sort by name
-        categories = sorted(categories_dict.values(), key=lambda x: x.name)
-
-        return categories
+        if result and result.data:
+            return [cls(category_data=data) for data in result.data]
+        return []
