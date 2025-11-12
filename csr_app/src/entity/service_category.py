@@ -178,14 +178,32 @@ class ServiceCategory:
             raise ValueError('Cannot delete category without ID')
 
         supabase = get_supabase()
-        result = execute_with_retry(
-            lambda: supabase.table('service_category')
-            .delete()
-            .eq('id', self.id)
-            .execute()
-        )
 
-        return bool(result and result.data)
+        print(f"[DEBUG] Attempting to delete category with ID: {self.id}")
+
+        try:
+            result = execute_with_retry(
+                lambda: supabase.table('service_category')
+                .delete()
+                .eq('id', self.id)
+                .execute()
+            )
+
+            print(f"[DEBUG] Delete result: {result}")
+            print(f"[DEBUG] Delete result.data: {result.data if result else 'None'}")
+
+            if result and result.data:
+                print(f"[DEBUG] Successfully deleted category ID: {self.id}")
+                return True
+            else:
+                print(f"[DEBUG] Delete returned no data for category ID: {self.id}")
+                return False
+
+        except Exception as e:
+            print(f"[ERROR] Failed to delete category ID {self.id}: {str(e)}")
+            import traceback
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
+            raise
 
     def to_dict(self) -> Dict:
         """
@@ -283,14 +301,35 @@ class ServiceCategory:
 
         search_pattern = f"%{keyword}%"
 
-        result = execute_with_retry(
+        # Search in name field
+        name_results = execute_with_retry(
             lambda: supabase.table('service_category')
             .select('*')
-            .or_(f'name.ilike."{search_pattern}",description.ilike."{search_pattern}"')
-            .order('name')
+            .ilike('name', search_pattern)
             .execute()
         )
 
-        if result and result.data:
-            return [cls(category_data=data) for data in result.data]
-        return []
+        # Search in description field
+        desc_results = execute_with_retry(
+            lambda: supabase.table('service_category')
+            .select('*')
+            .ilike('description', search_pattern)
+            .execute()
+        )
+
+        # Combine results and remove duplicates
+        categories_dict = {}
+
+        if name_results and name_results.data:
+            for data in name_results.data:
+                categories_dict[data['id']] = cls(category_data=data)
+
+        if desc_results and desc_results.data:
+            for data in desc_results.data:
+                if data['id'] not in categories_dict:
+                    categories_dict[data['id']] = cls(category_data=data)
+
+        # Sort by name
+        categories = sorted(categories_dict.values(), key=lambda x: x.name)
+
+        return categories
