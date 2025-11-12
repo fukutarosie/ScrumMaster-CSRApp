@@ -388,14 +388,10 @@ export default function CompletedMatches() {
 
                   {/* Request Details */}
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-500">Created</p>
                         <p className="font-medium">{formatDate(match.created_at)}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">Priority</p>
-                        <p className="font-medium">{match.priority}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">CSR Views</p>

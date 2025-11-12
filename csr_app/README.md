@@ -71,3 +71,16 @@ Run these SQL scripts in Supabase SQL Editor **in order**:
 1. `STEP_1_BACKUP_SQL.sql`
 2. `STEP_2_RENAME_SQL.sql`
 3. `STEP_3_VERIFY_SQL.sql`
+
+
+---
+
+## 📄 License
+
+For coursework use within CSIT314. All rights reserved.
+
+---
+
+## 🎓 Credits
+
+Developed by the CSR ScrumMasters team for CSIT314 Software Development Methodologies, 2025.

@@ -26,13 +26,10 @@ class GetShortlistController:
             
             csr_user_id = user.id
 
-            # If frontend does not provide a status filter, fetch ALL items
-            # The frontend will handle filtering by tabs
-            # Only apply filter if explicitly provided
-            if status_filter and status_filter.strip():
-                status_filter = status_filter.strip()
-            else:
-                status_filter = None
+            # If frontend does not provide a status filter, default to SHORTLISTED
+            # to show the CSR their active shortlist items first.
+            if not status_filter:
+                status_filter = Shortlist.STATUS_SHORTLISTED
             
             # Parse pagination
             try:
@@ -45,18 +42,18 @@ class GetShortlistController:
             # Calculate offset from page number
             offset = (page - 1) * limit
             
-            # Query shortlist entries with database-level pagination
+            # Query shortlist entries (entity returns objects). Entity doesn't support pagination directly,
+            # so we fetch filtered results and slice in-memory for now.
             shortlist_entries = Shortlist.search(
                 csr_user_id=csr_user_id,
-                status=status_filter,
-                limit=limit,
-                offset=offset
+                status=status_filter
             )
-            shortlist_items = [entry.to_dict() for entry in shortlist_entries]
+            paged_entries = shortlist_entries[offset: offset + limit] if shortlist_entries else []
+            shortlist_items = [entry.to_dict() for entry in paged_entries]
             
-            print(f"[DEBUG] Shortlist controller - User ID: {csr_user_id}, Status filter: '{status_filter if status_filter else 'ALL'}', Items found: {len(shortlist_items)}")
+            print(f"[DEBUG] Shortlist controller - User ID: {csr_user_id}, Status filter: {status_filter}, Items found: {len(shortlist_items)}")
             if shortlist_items:
-                print(f"[DEBUG] Sample item statuses: {[item['status'] for item in shortlist_items[:3]]}")
+                print(f"[DEBUG] First item: {shortlist_items[0]}")
             
             # Return response
             return (ResponseHelpers.success_response(

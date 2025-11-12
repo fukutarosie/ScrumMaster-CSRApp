@@ -193,7 +193,7 @@ class Request:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_type')
+            lambda: supabase.table('service_types')
             .select('id')
             .eq('service_name', self.service_type)
             .execute()
@@ -661,8 +661,9 @@ class Request:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('service_type')
+            lambda: supabase.table('service_types')
             .select('*')
+            .order('service_name')
             .execute()
         )
         
