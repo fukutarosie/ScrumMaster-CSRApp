@@ -1,18 +1,18 @@
 """
-Suspend User Profile Controller - TRUE OOP Implementation
+Activate User Profile Controller - TRUE OOP Implementation
 """
 
 from typing import Dict, Tuple, Optional
 from src.entity import User
 
 
-class SuspendUserProfileController:
+class ActivateUserProfileController:
     """
-    Suspend User Profile Controller - TRUE OOP
-    Temporarily deactivates a user account instead of permanently deleting it.
+    Activate User Profile Controller - TRUE OOP
+    Reactivates a suspended user account.
     
     Usage:
-        controller = SuspendUserProfileController(user_id)
+        controller = ActivateUserProfileController(user_id)
         response, status = controller.execute()
     """
     
@@ -22,7 +22,7 @@ class SuspendUserProfileController:
         self.user: Optional[User] = None
     
     def execute(self) -> Tuple[Dict, int]:
-        """Execute user profile suspension (deactivation)"""
+        """Execute user profile reactivation"""
         # Load user from database
         self.user = User.find(self.user_id)
         if not self.user:
@@ -31,21 +31,22 @@ class SuspendUserProfileController:
                 'message': 'User profile not found'
             }, 404
         
-        # Check if already deactivated
-        if not self.user.is_active:
+        # Check if already active
+        if self.user.is_active:
             return {
                 'success': False,
-                'message': 'User profile is already suspended'
+                'message': 'User profile is already active'
             }, 400
         
-        # Deactivate (instance method - sets is_active to False)
-        if self.user.deactivate():
+        # Activate (instance method - sets is_active to True)
+        if self.user.activate():
             return {
                 'success': True,
-                'message': f'User profile for {self.user.username} has been suspended successfully'
+                'message': f'User profile for {self.user.username} has been reactivated successfully'
             }, 200
         
         return {
             'success': False,
-            'message': 'Failed to suspend user profile'
+            'message': 'Failed to activate user profile'
         }, 400
+
