@@ -36,7 +36,7 @@ class UpdateUserAccountController:
         # Instance variables (object state - data in memory)
         self.user_id = user_id
         self.request_data = request_data
-        self.user = None  # Will hold User object
+        self.user = None  # Will hold user object 
         self.errors: List[str] = []
         self.updates: Dict = {}
     
@@ -161,9 +161,9 @@ class UpdateUserAccountController:
             # Step 3: Apply updates to User object
             self.apply_updates()
             
-            # Step 4: Save User object (User.save() does the actual work)
+            # Step 4: Call User.save() Save User object 
             try:
-                self.user.save()  # Instance method - does actual database work
+                self.user.save()  # Instance method 
             except ValueError as e:
                 return ResponseHelpers.error_response(
                     message=str(e),
