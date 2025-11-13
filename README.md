@@ -1,6 +1,6 @@
 # Corporate Social Responsibility (CSR) Web App
 
- CSR Web App matches Corporate Social Responsibility (CSR) corporate volunteers (CV) and Person-In-Needs (PINs) Built with Next.js, Tailwind CSS, Flask, Supabase PostgreSQL, and BCE Architecture.
+ CSR Web App matches Corporate Social Responsibility (CSR) corporate volunteers (CV) and Person-In-Needs (PINs). Built with Next.js, Tailwind CSS, Flask, Supabase PostgreSQL, BCE Architecture and Test-Driven Development (TDD).
 
 **Authors:** CSR ScrumMasters Team
 
