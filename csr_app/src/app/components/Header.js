@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
@@ -8,22 +8,41 @@ export default function Header({ title = 'Dashboard', subtitle = null }) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const getToken = () => localStorage.getItem('token');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setToken(localStorage.getItem('token'));
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (err) {
+          console.error('Failed to parse user data:', err);
+        }
+      }
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
       await axios.post('http://localhost:5000/api/auth/logout', {}, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`
-        }
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
       });
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      // Clear token and user from localStorage regardless of API response
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        // Clear token and user from localStorage regardless of API response
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      setToken(null);
       router.push('/');
       setIsLogoutModalOpen(false);
     }
@@ -37,6 +56,11 @@ export default function Header({ title = 'Dashboard', subtitle = null }) {
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{title}</h1>
             {subtitle && <p className="text-gray-600 mt-1 text-sm">{subtitle}</p>}
+            {user && (
+              <p className="text-gray-500 mt-1 text-xs">
+                <span className="font-medium">Logged in as:</span> {user.username}
+              </p>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}

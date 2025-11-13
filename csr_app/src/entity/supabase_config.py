@@ -24,7 +24,7 @@ def _warmup_connection():
     """Warm up the Supabase connection to avoid cold start issues"""
     try:
         # Simple query to establish connection
-        supabase.table('roles').select("id").limit(1).execute()
+        supabase.table('role').select("id").limit(1).execute()
         print("[INFO] Supabase connection warmed up successfully")
     except Exception as e:
         print(f"[WARNING] Supabase warmup failed (will retry on first request): {str(e)}")

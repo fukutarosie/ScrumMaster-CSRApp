@@ -65,6 +65,16 @@ from src.api.role.create_role import create_role_boundary
 from src.api.role.update_role import update_role_boundary
 from src.api.role.delete_role import delete_role_boundary
 
+# Platform API Endpoints
+from src.api.platform.create_category_page import create_category_page
+from src.api.platform.update_category_page import update_category_page
+from src.api.platform.delete_category_page import delete_category_page
+from src.api.platform.view_categories_page import view_categories_page
+from src.api.platform.search_categories_page import search_categories_page
+from src.api.platform.daily_reports_page import daily_reports_page
+from src.api.platform.weekly_reports_page import weekly_reports_page
+from src.api.platform.monthly_reports_page import monthly_reports_page
+
 # Register Auth API Endpoints
 app.register_blueprint(login_boundary)
 app.register_blueprint(logout_boundary)
@@ -111,6 +121,16 @@ app.register_blueprint(create_role_boundary)
 app.register_blueprint(update_role_boundary)
 app.register_blueprint(delete_role_boundary)
 
+# Register Platform API Endpoints
+app.register_blueprint(create_category_page)
+app.register_blueprint(update_category_page)
+app.register_blueprint(delete_category_page)
+app.register_blueprint(view_categories_page)
+app.register_blueprint(search_categories_page)
+app.register_blueprint(daily_reports_page)
+app.register_blueprint(weekly_reports_page)
+app.register_blueprint(monthly_reports_page)
+
 # Health check endpoint
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -138,5 +158,5 @@ if __name__ == '__main__':
     port = int(os.getenv('FLASK_PORT', 5000))
     host = os.getenv('FLASK_HOST', '0.0.0.0')
     debug = os.getenv('FLASK_DEBUG', 'False') == 'True'
-    
+
     app.run(host=host, port=port, debug=debug)

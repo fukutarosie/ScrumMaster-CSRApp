@@ -41,7 +41,15 @@ export default function RequestCard({
 
   const colors = themeColors[theme] || themeColors.blue;
 
-  const displayStatus = request.assignment_status || request.status;
+  const analyticsData = analytics || {
+    view_count: request?.view_count ?? 0,
+    shortlist_count: request?.shortlist_count ?? 0,
+  };
+
+  const shouldShowAnalytics =
+    theme === 'blue' &&
+    analyticsData &&
+    (analyticsData.view_count ?? analyticsData.shortlist_count) !== undefined;
 
   const getStatusBadge = (status) => {
     const statusColors = {
@@ -89,10 +97,10 @@ export default function RequestCard({
         </div>
         
         {/* Status Badge Overlay */}
-      {displayStatus && (
+        {request.status && (
           <div className="absolute top-3 right-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${getStatusBadge(displayStatus)}`}>
-            {displayStatus.replace('_', ' ')}
+            <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${getStatusBadge(request.status)}`}>
+              {request.status.replace('_', ' ')}
             </span>
           </div>
         )}
@@ -147,22 +155,10 @@ export default function RequestCard({
 
           {/* Extra Info (custom content passed from parent) */}
           {extraInfo}
-
-          {/* Assignment info fallback */}
-          {!extraInfo && request.active_assignment && request.active_assignment.csr_user && (
-            <div className="flex items-center text-sm text-purple-700 font-medium bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
-              <span className="mr-2">👤</span>
-              <span>
-                {request.assignment_status === 'IN_PROGRESS'
-                  ? `In progress by ${request.active_assignment.csr_user.full_name}`
-                  : `Completed by ${request.active_assignment.csr_user.full_name}`}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* 🆕 US-27 & US-28: Analytics Section */}
-        {analytics && (
+        {shouldShowAnalytics && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex gap-6 justify-center">
               <div className="flex items-center gap-2">
@@ -170,7 +166,7 @@ export default function RequestCard({
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Views</p>
                   <p className="text-lg font-bold text-blue-600">
-                    {analytics.view_count || 0}
+                    {analyticsData.view_count || 0}
                   </p>
                 </div>
               </div>
@@ -180,7 +176,7 @@ export default function RequestCard({
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Shortlisted</p>
                   <p className="text-lg font-bold text-purple-600">
-                    {analytics.shortlist_count || 0}
+                    {analyticsData.shortlist_count || 0}
                   </p>
                 </div>
               </div>

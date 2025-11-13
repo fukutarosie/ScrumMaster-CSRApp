@@ -28,13 +28,7 @@ from .supabase_config import get_supabase, SUPABASE_KEY, execute_with_retry
 
 class User:
     """
-    User Entity - TRUE OOP Implementation
-    
-    This class implements proper OOP:
-    - Objects hold data in memory (instance variables)
-    - Instance methods do the actual work (not wrappers)
-    - Factory methods (class methods) for querying
-    - No static methods for business logic
+    User Entity 
     
     Usage:
         # Create new user
@@ -96,8 +90,8 @@ class User:
         """Load user data from database by ID (private method)"""
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
-            .select('*, roles(*)')
+            lambda: supabase.table('user')
+            .select('*, role(*)')
             .eq('id', user_id)
             .execute()
         )
@@ -115,7 +109,8 @@ class User:
         self.is_active = data.get('is_active', True)
         self.created_at = data.get('created_at')
         self.last_login = data.get('last_login')
-        self.roles = data.get('roles')
+        # Support both 'role' (singular, from joined query) and 'roles' (plural, backward compatibility)
+        self.roles = data.get('role') or data.get('roles')
     
     # ============================================================================
     # VALIDATION METHODS (Instance methods)
@@ -158,7 +153,7 @@ class User:
         supabase = get_supabase()
         
         # Check username (skip if updating existing user)
-        query = supabase.table('users').select('id').eq('username', self.username)
+        query = supabase.table('user').select('id').eq('username', self.username)
         if self.id:
             query = query.neq('id', self.id)
         result = execute_with_retry(lambda: query.execute())
@@ -166,7 +161,7 @@ class User:
             return False, f"Username '{self.username}' already exists"
         
         # Check email
-        query = supabase.table('users').select('id').eq('email', self.email)
+        query = supabase.table('user').select('id').eq('email', self.email)
         if self.id:
             query = query.neq('id', self.id)
         result = execute_with_retry(lambda: query.execute())
@@ -213,7 +208,7 @@ class User:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('users')
+                lambda: supabase.table('user')
                 .update(update_data)
                 .eq('id', self.id)
                 .execute()
@@ -231,7 +226,7 @@ class User:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('users')
+                lambda: supabase.table('user')
                 .insert(insert_data)
                 .execute()
             )
@@ -259,7 +254,7 @@ class User:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
+            lambda: supabase.table('user')
             .delete()
             .eq('id', self.id)
             .execute()
@@ -286,7 +281,7 @@ class User:
         now = datetime.now().isoformat()
         
         result = execute_with_retry(
-            lambda: supabase.table('users')
+            lambda: supabase.table('user')
             .update({'last_login': now})
             .eq('id', self.id)
             .execute()
@@ -465,8 +460,8 @@ class User:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
-            .select('*, roles(*)')
+            lambda: supabase.table('user')
+            .select('*, role(*)')
             .eq('username', username)
             .execute()
         )
@@ -488,8 +483,8 @@ class User:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
-            .select('*, roles(*)')
+            lambda: supabase.table('user')
+            .select('*, role(*)')
             .eq('email', email)
             .execute()
         )
@@ -510,7 +505,7 @@ class User:
             List of User objects
         """
         supabase = get_supabase()
-        query = supabase.table('users').select('*, roles(*)')
+        query = supabase.table('user').select('*, role(*)')
         
         if not include_inactive:
             query = query.eq('is_active', True)
@@ -534,8 +529,8 @@ class User:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
-            .select('*, roles(*)')
+            lambda: supabase.table('user')
+            .select('*, role(*)')
             .eq('role_id', role_id)
             .execute()
         )
@@ -638,7 +633,7 @@ class User:
             List of User objects matching criteria
         """
         supabase = get_supabase()
-        query = supabase.table('users').select('*, roles(*)')
+        query = supabase.table('user').select('*, role(*)')
         
         if username:
             query = query.ilike('username', f'%{username}%')
@@ -663,7 +658,7 @@ class User:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
+            lambda: supabase.table('user')
             .select('id', count='exact')
             .execute()
         )
@@ -679,7 +674,7 @@ class User:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('users')
+            lambda: supabase.table('user')
             .select('id', count='exact')
             .eq('is_active', True)
             .execute()

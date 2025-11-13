@@ -27,8 +27,8 @@ class ViewAllUserAccountsController:
             Tuple of (response_dict, status_code)
         """
         try:
-            # Get all User objects (factory method)
-            self.users = User.all()
+            # Get all User objects including inactive ones (factory method)
+            self.users = User.all(include_inactive=True)
             
             # Convert to dictionaries
             users_data = [user.to_dict() for user in self.users]

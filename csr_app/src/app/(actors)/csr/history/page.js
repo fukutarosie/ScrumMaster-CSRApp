@@ -227,22 +227,18 @@ export default function CSRHistory() {
                       </h3>
                       <p className="text-sm text-gray-600 mb-3">{item.requests?.description}</p>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
-                        <div>
-                          <span className="font-medium text-gray-700">Category:</span>
-                          <p className="text-gray-600">{item.requests?.category}</p>
-                        </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-3">
                         <div>
                           <span className="font-medium text-gray-700">Service Type:</span>
-                          <p className="text-gray-600">{item.requests?.service_type}</p>
+                          <p className="text-gray-600">{item.requests?.service_type || 'N/A'}</p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-700">Location:</span>
-                          <p className="text-gray-600">{item.requests?.location_city}, {item.requests?.location_state}</p>
+                          <span className="font-medium text-gray-700">Region:</span>
+                          <p className="text-gray-600">{item.requests?.region || 'N/A'}</p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-700">Priority:</span>
-                          <p className="text-gray-600">{item.requests?.priority}</p>
+                          <span className="font-medium text-gray-700">Requested By:</span>
+                          <p className="text-gray-600">{item.requests?.requested_by_date ? new Date(item.requests.requested_by_date).toLocaleDateString() : 'N/A'}</p>
                         </div>
                       </div>
 

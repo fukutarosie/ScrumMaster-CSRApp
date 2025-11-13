@@ -74,7 +74,7 @@ export default function UserAdminDashboard() {
     fetchRoles();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (retryCount = 0) => {
     setLoading(true);
     setError('');
     try {
@@ -89,16 +89,21 @@ export default function UserAdminDashboard() {
         setFilteredUsers(response.data.data);
       }
     } catch (err) {
+      console.error('Failed to fetch users:', err);
+      // Retry once silently if it's a network/socket error
+      if (retryCount === 0 && (err.code === 'ECONNRESET' || err.message.includes('socket'))) {
+        setTimeout(() => fetchUsers(1), 500);
+        return;
+      }
       const msg = 'Failed to fetch users';
       setError(msg);
       toast.error(msg);
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchRoles = async () => {
+  const fetchRoles = async (retryCount = 0) => {
     try {
       const response = await axios.get('http://localhost:5000/api/userProfile', {
         headers: {
@@ -111,6 +116,12 @@ export default function UserAdminDashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch roles:', err);
+      // Retry once silently if it's a network/socket error
+      if (retryCount === 0 && (err.code === 'ECONNRESET' || err.message.includes('socket'))) {
+        setTimeout(() => fetchRoles(1), 500);
+        return;
+      }
+      // Only show error on actual failure (not on retry)
     }
   };
 
@@ -459,6 +470,14 @@ export default function UserAdminDashboard() {
                 </button>
                 <button
                   onClick={() => {
+                    // Clear the form before opening modal
+                    setCreateForm({
+                      username: '',
+                      password: '',
+                      email: '',
+                      full_name: '',
+                      role_id: ''
+                    });
                     fetchRoles();
                     fetchProfiles();
                     setShowCreateModal(true);
@@ -728,7 +747,7 @@ export default function UserAdminDashboard() {
                     type="button"
                     onClick={() => {
                       setShowCreateModal(false);
-                      setCreateForm({username: '', password: '', email: '', full_name: '', profile_id: ''});
+                      setCreateForm({username: '', password: '', email: '', full_name: '', role_id: ''});
                     }}
                     className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium"
                   >

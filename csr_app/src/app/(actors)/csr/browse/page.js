@@ -40,10 +40,15 @@ export default function BrowseRequests() {
     }
 
     setUser(parsedUser);
-    fetchRequests();
-    fetchServiceTypes();
-    fetchShortlistedIds();
-    setLoading(false);
+    
+    // Fetch data asynchronously and only mark loading complete when all are done
+    Promise.all([
+      fetchRequests(),
+      fetchServiceTypes(),
+      fetchShortlistedIds()
+    ]).finally(() => {
+      setLoading(false);
+    });
   }, [router]);
 
   const fetchServiceTypes = async () => {
@@ -242,27 +247,58 @@ export default function BrowseRequests() {
         >
           {filteredRequests.map((request) => {
             const isShortlisted = shortlistedIds.includes(request.id);
+            const activeAssignment = request.active_assignment;
+            const takenByMe = activeAssignment && activeAssignment.csr_user_id === user?.id;
+            const takenByOther = activeAssignment && activeAssignment.csr_user_id !== user?.id;
+            
             return (
               <RequestCard
                 key={request.id}
                 request={request}
                 onClick={() => router.push(`/csr/browse/${request.id}`)}
                 theme="purple"
+                badge={
+                  <>
+                    {request.assignment_status === 'IN_PROGRESS' && (
+                      <div className="absolute top-3 left-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2 z-10">
+                        <span>🚀</span>
+                        <span>{takenByMe ? 'In Progress (You)' : 'In Progress'}</span>
+                      </div>
+                    )}
+                    {request.assignment_status === 'COMPLETED' && (
+                      <div className="absolute top-3 left-3 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2 z-10">
+                        <span>✅</span>
+                        <span>Completed</span>
+                      </div>
+                    )}
+                  </>
+                }
                 actionButton={
                   <div className="flex items-center justify-between pt-4 border-t">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleShortlist(request.id);
-                      }}
-                      disabled={addingToShortlist === request.id}
-                      className={`text-2xl transition-transform hover:scale-110 ${
-                        addingToShortlist === request.id ? 'opacity-50' : ''
-                      }`}
-                      title={isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'}
-                    >
-                      {isShortlisted ? '❤️' : '🤍'}
-                    </button>
+                    {takenByMe && request.assignment_status === 'IN_PROGRESS' ? (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="text-xl">🚀</span>
+                        <span className="text-sm font-medium">You're Volunteering</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleShortlist(request.id);
+                        }}
+                        disabled={addingToShortlist === request.id || takenByOther}
+                        className={`text-2xl transition-transform hover:scale-110 ${
+                          (addingToShortlist === request.id || takenByOther) ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        title={
+                          takenByOther 
+                            ? 'Already taken by another CSR' 
+                            : (isShortlisted ? 'Remove from shortlist' : 'Add to shortlist')
+                        }
+                      >
+                        {isShortlisted ? '❤️' : '🤍'}
+                      </button>
+                    )}
                     <button
                       onClick={() => router.push(`/csr/browse/${request.id}`)}
                       className="flex-1 ml-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"

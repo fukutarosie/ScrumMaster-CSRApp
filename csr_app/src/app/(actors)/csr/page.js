@@ -84,10 +84,15 @@ export default function CSRDashboard() {
     }
 
     setUser(parsedUser);
-    fetchRequests();
-    fetchServiceTypes();
-    fetchShortlistedIds();
-    setLoading(false);
+    
+    // Fetch data asynchronously and only mark loading complete when all are done
+    Promise.all([
+      fetchRequests(),
+      fetchServiceTypes(),
+      fetchShortlistedIds()
+    ]).finally(() => {
+      setLoading(false);
+    });
   }, [router]);
 
   /**
@@ -347,7 +352,7 @@ export default function CSRDashboard() {
           </button>
 
           <button
-            onClick={() => router.push('/csr/history')}
+            onClick={() => router.push('/csr/shortlist?tab=COMPLETED')}
             className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg shadow-lg p-6 hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105"
           >
             <div className="text-4xl mb-3">�</div>
@@ -460,32 +465,39 @@ export default function CSRDashboard() {
                 ) : null}
                 actionButton={
                   <div className="flex items-center justify-between pt-4 border-t">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleShortlist(request.id);
-                      }}
-                      disabled={addingToShortlist === request.id || (takenByOther && !isShortlisted)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                        isShortlisted 
-                          ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' 
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      } ${(addingToShortlist === request.id || (takenByOther && !isShortlisted)) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      title={
-                        takenByOther && !isShortlisted 
-                          ? `Taken by ${takenByName}`
-                          : (isShortlisted ? 'Remove from shortlist' : 'Add to shortlist')
-                      }
-                    >
-                      <span className="text-xl">{isShortlisted ? '⭐' : '☆'}</span>
-                      <span className="text-sm font-medium">
-                        {addingToShortlist === request.id
-                          ? 'Processing...'
-                          : takenByOther && !isShortlisted
+                    {takenByMe && request.assignment_status === 'IN_PROGRESS' ? (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="text-xl">🚀</span>
+                        <span className="text-sm font-medium">You're Volunteering</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleShortlist(request.id);
+                        }}
+                        disabled={addingToShortlist === request.id || (takenByOther && !isShortlisted)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                          isShortlisted 
+                            ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' 
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        } ${(addingToShortlist === request.id || (takenByOther && !isShortlisted)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={
+                          takenByOther && !isShortlisted 
                             ? `Taken by ${takenByName}`
-                            : (isShortlisted ? 'Shortlisted' : 'Shortlist')}
-                      </span>
-                    </button>
+                            : (isShortlisted ? 'Remove from shortlist' : 'Add to shortlist')
+                        }
+                      >
+                        <span className="text-xl">{isShortlisted ? '⭐' : '☆'}</span>
+                        <span className="text-sm font-medium">
+                          {addingToShortlist === request.id
+                            ? 'Processing...'
+                            : takenByOther && !isShortlisted
+                              ? `Taken by ${takenByName}`
+                              : (isShortlisted ? 'Shortlisted' : 'Shortlist')}
+                        </span>
+                      </button>
+                    )}
                     <button
                       onClick={() => router.push(`/csr/browse/${request.id}`)}
                       className="flex-1 ml-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"

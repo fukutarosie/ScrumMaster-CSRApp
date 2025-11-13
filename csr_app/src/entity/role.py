@@ -83,7 +83,7 @@ class Role:
         """Load role data from database by ID (private method)"""
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .select('*')
             .eq('id', role_id)
             .execute()
@@ -134,7 +134,7 @@ class Role:
         supabase = get_supabase()
         
         # Check role_name (skip if updating existing role)
-        query = supabase.table('roles').select('id').eq('role_name', self.role_name)
+        query = supabase.table('role').select('id').eq('role_name', self.role_name)
         if self.id:
             query = query.neq('id', self.id)
         result = execute_with_retry(lambda: query.execute())
@@ -142,7 +142,7 @@ class Role:
             return False, f"Role name '{self.role_name}' already exists"
         
         # Check role_code
-        query = supabase.table('roles').select('id').eq('role_code', self.role_code)
+        query = supabase.table('role').select('id').eq('role_code', self.role_code)
         if self.id:
             query = query.neq('id', self.id)
         result = execute_with_retry(lambda: query.execute())
@@ -188,7 +188,7 @@ class Role:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('roles')
+                lambda: supabase.table('role')
                 .update(update_data)
                 .eq('id', self.id)
                 .execute()
@@ -203,7 +203,7 @@ class Role:
             }
             
             result = execute_with_retry(
-                lambda: supabase.table('roles')
+                lambda: supabase.table('role')
                 .insert(insert_data)
                 .execute()
             )
@@ -230,7 +230,7 @@ class Role:
         
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .delete()
             .eq('id', self.id)
             .execute()
@@ -281,7 +281,7 @@ class Role:
         # Update in database
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .update(update_data)
             .eq('id', self.id)
             .execute()
@@ -364,7 +364,7 @@ class Role:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .select('*')
             .eq('role_name', role_name)
             .execute()
@@ -387,7 +387,7 @@ class Role:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .select('*')
             .eq('role_code', role_code)
             .execute()
@@ -407,7 +407,7 @@ class Role:
         """
         supabase = get_supabase()
         result = execute_with_retry(
-            lambda: supabase.table('roles')
+            lambda: supabase.table('role')
             .select('*')
             .execute()
         )

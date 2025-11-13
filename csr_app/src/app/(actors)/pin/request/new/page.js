@@ -148,9 +148,9 @@ export default function NewRequest() {
         
         // Redirect immediately to dashboard (success message will show there)
         if (newRequestId) {
-          router.push(`/pin/dashboard?new=${newRequestId}`);
+          router.push(`/pin?new=${newRequestId}`);
         } else {
-          router.push('/pin/dashboard');
+          router.push('/pin');
         }
       } else {
         setError(response.data.message);
@@ -169,7 +169,7 @@ export default function NewRequest() {
       
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link href="/pin/dashboard">
+        <Link href="/pin">
           <button className="text-blue-600 hover:text-blue-800 font-semibold mb-6">
             ← Back to Dashboard
           </button>
@@ -344,7 +344,7 @@ export default function NewRequest() {
             >
               {loading ? 'Creating...' : 'Create Request'}
             </button>
-            <Link href="/pin/dashboard" className="flex-1">
+            <Link href="/pin" className="flex-1">
               <button
                 type="button"
                 className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded-lg transition"
