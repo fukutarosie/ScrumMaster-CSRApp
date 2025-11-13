@@ -1,0 +1,27 @@
+[
+  {
+    "role_name": "User Admin",
+    "role_code": "ADMIN",
+    "description": "Administrator with full system access",
+    "dashboard_route": "/admin"
+  },
+  {
+    "role_name": "PIN",
+    "role_code": "PIN",
+    "description": "Person-In-Need who creates requests",
+    "dashboard_route": "/pin"
+  },
+  {
+    "role_name": "CSR Rep",
+    "role_code": "CSR",
+    "description": "CSR Representative who fulfills requests",
+    "dashboard_route": "/csr"
+  },
+  {
+    "role_name": "Platform Management",
+    "role_code": "PLATFORM",
+    "description": "Platform manager with oversight capabilities",
+    "dashboard_route": "/platform"
+  }
+]
+
