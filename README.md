@@ -1,6 +1,6 @@
-# A Corporate Social Responsibility (CSR) Web App to match Corporate Social Responsibility (CSR) corporate volunteers (CV) and Person-In-Needs (PINs)
+# Corporate Social Responsibility (CSR) Web App
 
-Built with Next.js, Tailwind CSS, Flask, Supabase PostgreSQL, and BCE Architecture.
+ CSR Web App matches Corporate Social Responsibility (CSR) corporate volunteers (CV) and Person-In-Needs (PINs) Built with Next.js, Tailwind CSS, Flask, Supabase PostgreSQL, and BCE Architecture.
 
 **Authors:** CSR ScrumMasters Team
 
@@ -60,22 +60,7 @@ npm run dev
 - Admin: `admin1` / `password123`
 - PIN User: `pin_user1` / `password123`
 - CSR Rep: `csr_rep1` / `password123`
-
----
-
-## Database Setup (First Time Only)
-
-Run these SQL scripts in Supabase SQL Editor **in order**:
-1. `STEP_1_BACKUP_SQL.sql`
-2. `STEP_2_RENAME_SQL.sql`
-3. `STEP_3_VERIFY_SQL.sql`
-
-
----
-
-## 📄 License
-
-For coursework use within CSIT314. All rights reserved.
+- Platform Management: 'platform_mgr1' / 'password123'
 
 ---
 
