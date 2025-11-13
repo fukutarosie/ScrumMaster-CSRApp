@@ -3,9 +3,11 @@ from supabase import create_client
 import os
 from dotenv import load_dotenv
 import time
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from environment.env
+env_path = Path(__file__).parent.parent.parent / 'environment.env'
+load_dotenv(dotenv_path=env_path)
 
 # Initialize Supabase client with environment variables
 SUPABASE_URL = os.getenv('SUPABASE_URL')
