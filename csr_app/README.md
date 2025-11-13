@@ -1,6 +1,4 @@
-# CSR Application
-
-A Corporate Social Responsibility (CSR) Web App built for module CSIT314 (Software Development Methodologies) of Singapore Institute of Technology.
+# A Corporate Social Responsibility (CSR) Web App to match Corporate Social Responsibility (CSR) corporate volunteers (CV) and Person-In-Needs (PINs)
 
 Built with Next.js, Tailwind CSS, Flask, Supabase PostgreSQL, and BCE Architecture.
 
