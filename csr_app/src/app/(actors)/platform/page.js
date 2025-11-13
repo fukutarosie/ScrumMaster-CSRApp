@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import axios from 'axios';
+import { useToast } from '../../components/ToastProvider';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -34,6 +35,7 @@ export default function PlatformDashboard() {
     activeUsers: 0,
     totalRequests: 0
   });
+  const toast = useToast();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -87,6 +89,7 @@ export default function PlatformDashboard() {
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
+      toast.error('Failed to load platform overview stats.');
     }
   };
 
@@ -100,12 +103,16 @@ export default function PlatformDashboard() {
         const categoriesArray = data?.categories || (Array.isArray(data) ? data : []);
         setCategories(categoriesArray);
       } else {
+        const message = response.data.message || 'Failed to fetch categories';
         setCategories([]);
-        setCategoryError(response.data.message || 'Failed to fetch categories');
+        setCategoryError(message);
+        toast.error(message);
       }
     } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch categories';
       setCategories([]);
-      setCategoryError(error.response?.data?.message || 'Failed to fetch categories');
+      setCategoryError(message);
+      toast.error(message);
     } finally {
       setCategoriesLoading(false);
     }
@@ -128,13 +135,22 @@ export default function PlatformDashboard() {
         const data = response.data.data;
         const categoriesArray = data?.categories || (Array.isArray(data) ? data : []);
         setCategories(categoriesArray);
+        if (categoriesArray.length === 0) {
+          toast.info('No categories matched that keyword.');
+        } else {
+          toast.success(`Showing ${categoriesArray.length} result${categoriesArray.length === 1 ? '' : 's'}.`);
+        }
       } else {
+        const message = response.data.message || 'Failed to search categories';
         setCategories([]);
-        setCategoryError(response.data.message || 'Failed to search categories');
+        setCategoryError(message);
+        toast.error(message);
       }
     } catch (error) {
+      const message = error.response?.data?.message || 'Failed to search categories';
       setCategories([]);
-      setCategoryError(error.response?.data?.message || 'Failed to search categories');
+      setCategoryError(message);
+      toast.error(message);
     } finally {
       setCategoriesLoading(false);
     }
@@ -154,9 +170,16 @@ export default function PlatformDashboard() {
         setCategoryForm({ service_name: '' });
         fetchCategories();
         fetchStats();
+        toast.success('Service category created successfully.');
+      } else {
+        const message = response.data.message || 'Failed to create category';
+        setCategoryError(message);
+        toast.error(message);
       }
     } catch (error) {
-      setCategoryError(error.response?.data?.message || 'Failed to create category');
+      const message = error.response?.data?.message || 'Failed to create category';
+      setCategoryError(message);
+      toast.error(message);
     }
   };
 
@@ -174,9 +197,16 @@ export default function PlatformDashboard() {
         setSelectedCategory(null);
         setCategoryForm({ service_name: '' });
         fetchCategories();
+        toast.success('Category updated successfully.');
+      } else {
+        const message = response.data.message || 'Failed to update category';
+        setCategoryError(message);
+        toast.error(message);
       }
     } catch (error) {
-      setCategoryError(error.response?.data?.message || 'Failed to update category');
+      const message = error.response?.data?.message || 'Failed to update category';
+      setCategoryError(message);
+      toast.error(message);
     }
   };
 
@@ -192,9 +222,16 @@ export default function PlatformDashboard() {
         setSelectedCategory(null);
         fetchCategories();
         fetchStats();
+        toast.success('Category removed successfully.');
+      } else {
+        const message = response.data.message || 'Failed to delete category';
+        setCategoryError(message);
+        toast.error(message);
       }
     } catch (error) {
-      setCategoryError(error.response?.data?.message || 'Failed to delete category');
+      const message = error.response?.data?.message || 'Failed to delete category';
+      setCategoryError(message);
+      toast.error(message);
     }
   };
 
@@ -209,7 +246,7 @@ export default function PlatformDashboard() {
     setIsDeleteModalOpen(true);
   };
 
-  const fetchReport = async () => {
+  const fetchReport = async ({ showToastOnSuccess = false } = {}) => {
     setReportsLoading(true);
     setReportError('');
     try {
@@ -226,9 +263,20 @@ export default function PlatformDashboard() {
       const response = await axios.get(url, getAuthHeaders());
       if (response.data.success) {
         setReportData(response.data.data);
+        if (showToastOnSuccess) {
+          toast.success('Report generated successfully.');
+        }
+      } else {
+        const message = response.data.message || 'Failed to fetch report';
+        setReportError(message);
+        if (showToastOnSuccess) {
+          toast.error(message);
+        }
       }
     } catch (error) {
-      setReportError(error.response?.data?.message || 'Failed to fetch report');
+      const message = error.response?.data?.message || 'Failed to fetch report';
+      setReportError(message);
+      toast.error(message);
     } finally {
       setReportsLoading(false);
     }
@@ -334,34 +382,69 @@ export default function PlatformDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="space-y-3">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <span className="text-base">⚡</span>
+                    Fast access
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
+                    type="button"
                     onClick={() => setActiveTab('categories')}
-                    className="w-full p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 p-6 text-left text-white shadow-lg transition-transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-300/60"
                   >
-                    <div className="flex items-center justify-between">
+                    <span className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-white/20 blur-3xl opacity-40" />
+                    <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">Manage Categories</h4>
-                        <p className="text-sm text-gray-600">Create, edit, or delete service categories</p>
+                        <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/80">
+                          <span className="text-lg">⭐</span>
+                          Manage Categories
+                        </span>
+                        <p className="mt-3 text-xl font-semibold">Curate available services</p>
+                        <p className="mt-2 text-sm text-white/80 max-w-xs">Create, edit, or remove service types so CSRs always see the right options.</p>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <div className="rounded-full bg-white/25 p-3 shadow-inner">
+                        <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/90">
+                      Open Categories
+                      <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </button>
+
                   <button
+                    type="button"
                     onClick={() => setActiveTab('reports')}
-                    className="w-full p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 p-6 text-left text-white shadow-lg transition-transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-rose-300/60"
                   >
-                    <div className="flex items-center justify-between">
+                    <span className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-white/20 blur-3xl opacity-40" />
+                    <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">View Reports</h4>
-                        <p className="text-sm text-gray-600">Access daily, weekly, and monthly reports</p>
+                        <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/80">
+                          <span className="text-lg">📊</span>
+                          View Reports
+                        </span>
+                        <p className="mt-3 text-xl font-semibold">Monitor platform health</p>
+                        <p className="mt-2 text-sm text-white/80 max-w-xs">Generate daily, weekly, or monthly snapshots to keep stakeholders informed.</p>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <div className="rounded-full bg-white/25 p-3 shadow-inner">
+                        <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 19h16M4 13h10M4 7h6" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/90">
+                      Open Reports
+                      <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </button>
@@ -536,7 +619,7 @@ export default function PlatformDashboard() {
 
                 <div className="flex items-end">
                   <button
-                    onClick={fetchReport}
+                    onClick={() => fetchReport({ showToastOnSuccess: true })}
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                   >
                     Generate Report

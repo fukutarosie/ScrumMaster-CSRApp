@@ -135,11 +135,11 @@ export default function MyShortlist() {
   const handleRemove = (item) => {
     const isInProgress = item.status === 'IN_PROGRESS';
     openConfirmModal({
-      title: isInProgress ? 'Remove opportunity you accepted?' : 'Remove from shortlist?',
+      title: isInProgress ? 'Cancel opportunity you accepted?' : 'Remove from shortlist?',
       description: isInProgress
-        ? 'This request is currently In Progress. Removing it will abandon your commitment.'
+        ? 'This request is currently In Progress. The PIN user will be notified that you are withdrawing from this opportunity.'
         : 'This will remove the request from your shortlist. You can add it again later from Browse.',
-      confirmLabel: isInProgress ? 'Remove Anyway' : 'Remove',
+      confirmLabel: isInProgress ? 'Withdraw' : 'Remove',
       onConfirm: () => executeRemove(item.id)
     });
   };
@@ -180,6 +180,15 @@ export default function MyShortlist() {
 
   const executeTakeOpportunity = async (shortlistId) => {
     try {
+      // Optimistically update the UI
+      setShortlist((prev) => 
+        prev.map(item => 
+          item.id === shortlistId 
+            ? { ...item, status: 'IN_PROGRESS' } 
+            : item
+        )
+      );
+
       const payload = { status: 'IN_PROGRESS' };
       const response = await axios.patch(
         `http://localhost:5000/api/shortlist/${shortlistId}/status`,
@@ -189,15 +198,18 @@ export default function MyShortlist() {
 
       if (response.data.success) {
         toast.success('Marked as In Progress');
-        // Switch to IN_PROGRESS tab after accepting
+        // Refresh data from server to ensure consistency
+        await fetchShortlist();
+        // Switch to IN_PROGRESS tab after data is loaded
         setStatusFilter('IN_PROGRESS');
-        fetchShortlist();
       }
     } catch (err) {
       console.error('Failed to take opportunity:', err);
       console.error('Full error object:', err.response?.data);
       const errorMsg = err.response?.data?.message || 'Failed to take opportunity';
       toast.error(errorMsg);
+      // Revert optimistic update on error
+      await fetchShortlist();
     }
   };
 
@@ -685,7 +697,7 @@ export default function MyShortlist() {
                             onClick={() => handleRemove(item)}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                           >
-                            🗑️ Remove
+                            {item.status === 'IN_PROGRESS' ? '🚫 Withdraw' : '🗑️ Remove'}
                           </button>
                         </div>
                       )}
