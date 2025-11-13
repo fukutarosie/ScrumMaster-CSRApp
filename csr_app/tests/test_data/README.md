@@ -134,33 +134,85 @@ def test_bulk_user_login(client, user_test_data):
 
 ---
 
-## Database Seeding Script Example
+## Database Seeding Script
+
+A seeding script is provided at `tests/seed_test_data.py` to easily insert or remove test data.
+
+### Quick Start
+
+```bash
+# Activate virtual environment
+cd csr_app
+venv\Scripts\activate
+
+# Run seeding script
+python tests/seed_test_data.py
+```
+
+### Seeding Options
+
+The script provides an interactive menu:
+
+1. **Seed all (roles + users)** - Insert all 4 roles and 100 user accounts
+2. **Seed roles only** - Insert only the 4 roles
+3. **Seed users only** - Insert only the 100 user accounts
+4. **Delete all test users** - Remove all 100 test user accounts
+5. **Delete test roles** - Remove test roles (⚠️ Use with caution!)
+6. **Exit**
+
+### Usage Example
+
+```bash
+$ python tests/seed_test_data.py
+
+============================================================
+🌱 CSR TEST DATA SEEDING UTILITY
+============================================================
+
+Options:
+  1. Seed all (roles + users)
+  2. Seed roles only
+  3. Seed users only
+  4. Delete all test users
+  5. Delete test roles (dangerous!)
+  6. Exit
+
+Enter your choice (1-6): 1
+
+============================================================
+🎭 SEEDING ROLES
+============================================================
+   ✅ User Admin (ADMIN)
+   ✅ PIN (PIN)
+   ✅ CSR Rep (CSR)
+   ✅ Platform Management (PLATFORM)
+
+📊 Summary:
+   ✅ Created: 4
+   ⚠️  Skipped: 0
+   📋 Total: 4
+
+============================================================
+👥 SEEDING USER ACCOUNTS
+============================================================
+   [  1/100] ✅ alice_tan (PIN)
+   [  2/100] ✅ bob_lim (CSR Rep)
+   ...
+```
+
+### Programmatic Usage
+
+You can also import and use the functions directly:
 
 ```python
-from src.entity.user import User
-from src.entity.role import Role
-import json
+from tests.seed_test_data import seed_all, seed_roles, seed_users
 
-def seed_test_users():
-    """Seed test users into database"""
-    # Load user data
-    with open('tests/test_data/user_accounts.json', 'r') as f:
-        users = json.load(f)
-    
-    for user_data in users:
-        # Find role
-        role = Role.find_by_name(user_data['role_name'])
-        if not role:
-            continue
-        
-        # Create user
-        user = User()
-        user.username = user_data['username']
-        user.email = user_data['email']
-        user.full_name = user_data['full_name']
-        user.role_id = role.id
-        user.set_password(user_data['password'])  # Hash password
-        user.save()
+# Seed everything
+seed_all()
+
+# Or seed individually
+seed_roles()
+seed_users()
 ```
 
 ---
