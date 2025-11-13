@@ -2,50 +2,41 @@
 Suspend User Profile Controller - TRUE OOP Implementation
 """
 
-from typing import Dict, Tuple, Optional
-from src.entity import User
+from typing import Dict, Tuple
+from src.entity import Role
 
 
 class SuspendUserProfileController:
     """
-    Suspend User Profile Controller - TRUE OOP
-    Temporarily deactivates a user account instead of permanently deleting it.
+    Suspend (Delete) User Profile Controller - TRUE OOP
     
     Usage:
-        controller = SuspendUserProfileController(user_id)
+        controller = SuspendUserProfileController(profile_id)
         response, status = controller.execute()
     """
     
-    def __init__(self, user_id: int):
+    def __init__(self, profile_id: int):
         """Initialize controller"""
-        self.user_id = user_id
-        self.user: Optional[User] = None
+        self.profile_id = profile_id
+        self.profile = None
     
     def execute(self) -> Tuple[Dict, int]:
-        """Execute user profile suspension (deactivation)"""
-        # Load user from database
-        self.user = User.find(self.user_id)
-        if not self.user:
+        """Execute profile deletion"""
+        self.profile = Role.find(self.profile_id)  # Use factory method
+        if not self.profile:
             return {
                 'success': False,
                 'message': 'User profile not found'
             }, 404
         
-        # Check if already deactivated
-        if not self.user.is_active:
-            return {
-                'success': False,
-                'message': 'User profile is already suspended'
-            }, 400
-        
-        # Deactivate (instance method - sets is_active to False)
-        if self.user.deactivate():
+        # Delete (instance method)
+        if self.profile.delete():
             return {
                 'success': True,
-                'message': f'User profile for {self.user.username} has been suspended successfully'
+                'message': 'User profile deleted successfully (cascading delete applied)'
             }, 200
         
         return {
             'success': False,
-            'message': 'Failed to suspend user profile'
+            'message': 'Failed to delete user profile'
         }, 400

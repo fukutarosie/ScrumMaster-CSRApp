@@ -34,7 +34,7 @@ pip install -r requirements.txt
 ```
 
 **Install NPM packages**
-```bash
+   ```bash
 cd src
 npm install
 cd ..
