@@ -119,7 +119,7 @@ class CreateServiceCategoryController:
                         message=error_msg,
                         error_code='CATEGORY_EXISTS',
                         status_code=409,
-                        details={'field': 'name'}
+                        details={'field': 'service_name'}
                     )
                 else:
                     return ResponseHelpers.error_response(

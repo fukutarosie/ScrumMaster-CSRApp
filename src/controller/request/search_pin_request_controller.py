@@ -62,10 +62,6 @@ class SearchPINRequestController:
             if self.category and req.category != self.category:
                 continue
             
-            # Priority filter
-            if self.priority and req.priority != self.priority:
-                continue
-            
             # Service type filter
             if self.service_type and req.service_type != self.service_type:
                 continue
@@ -110,7 +106,6 @@ class SearchPINRequestController:
             if self.keyword: filters_applied['keyword'] = self.keyword
             if self.category: filters_applied['category'] = self.category
             if self.status: filters_applied['status'] = self.status
-            if self.priority: filters_applied['priority'] = self.priority
             if self.service_type: filters_applied['service_type'] = self.service_type
             
             # Convert to dictionaries

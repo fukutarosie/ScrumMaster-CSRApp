@@ -146,7 +146,6 @@ class AddToShortlistController:
             # Step 3: Create Shortlist object (holds data in memory)
             self.create_shortlist_object()
             self.shortlist.request_id = request_id_int
-            
             # Step 4: Save Shortlist object (Shortlist.save() does the actual work)
             try:
                 self.shortlist.save()  # Instance method - does actual database work

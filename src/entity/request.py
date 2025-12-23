@@ -237,8 +237,10 @@ class Request:
         
         supabase = get_supabase()
         
+        # If request ID is provided, means it will update existing request
         if self.id:
-            # Update existing request
+            
+            #US 15: Update existing request
             update_data = {
                 'title': self.title,
                 'description': self.description,
@@ -261,7 +263,8 @@ class Request:
             if result and result.data:
                 self.updated_at = result.data[0]['updated_at']
         else:
-            # Create new request
+            # If request ID is not provided, means it will create new request
+            # US 13: Create new request
             insert_data = {
                 'pin_user_id': self.pin_user_id,
                 'title': self.title,
@@ -612,6 +615,8 @@ class Request:
         return []
     
     @classmethod
+    
+    # US 17: Search requests by multiple criteria
     def search(cls, 
                service_type: str = None,
                region: str = None,

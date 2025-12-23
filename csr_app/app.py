@@ -4,7 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 
 # Load environment variables
-load_dotenv('environment.env')
+load_dotenv()
 
 # Create Flask app with static folder configured
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -102,7 +102,7 @@ app.register_blueprint(suspend_pin_request_boundary)
 app.register_blueprint(search_pin_request_boundary)
 app.register_blueprint(get_pin_requests_boundary)
 app.register_blueprint(get_request_analytics_boundary)
-app.register_blueprint(increment_view_count_boundary)  # US-27: Track CSR views
+app.register_blueprint(increment_view_count_boundary)  
 app.register_blueprint(get_completed_matches_boundary)
 app.register_blueprint(get_request_lookups_boundary)
 
