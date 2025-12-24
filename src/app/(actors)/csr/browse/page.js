@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 import Header from '../../../components/Header';
 import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
@@ -53,7 +54,7 @@ export default function BrowseRequests() {
 
   const fetchServiceTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests/service-types');
+      const response = await axios.get(apiUrl('/api/requests/service-types'));
       
       // Handle if response.data is an array (double-wrapped)
       const actualData = Array.isArray(response.data) ? response.data[0] : response.data;
@@ -68,7 +69,7 @@ export default function BrowseRequests() {
 
   const fetchShortlistedIds = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shortlist', {
+      const response = await axios.get(apiUrl('/api/shortlist'), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       if (response.data.success) {
@@ -82,7 +83,7 @@ export default function BrowseRequests() {
 
   const fetchRequests = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests', {
+      const response = await axios.get(apiUrl('/api/requests'), {
         headers: { 'Authorization': `Bearer ${getToken()}` },
         params: { status: 'ACTIVE' }
       });
@@ -117,14 +118,14 @@ export default function BrowseRequests() {
     try {
       if (isShortlisted) {
         // Find the shortlist item to get its ID
-        const shortlistResponse = await axios.get('http://localhost:5000/api/shortlist', {
+        const shortlistResponse = await axios.get(apiUrl('/api/shortlist'), {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
         const shortlistItem = shortlistResponse.data.data.find(item => item.request_id === requestId);
         
         if (shortlistItem) {
           await axios.delete(
-            `http://localhost:5000/api/shortlist/${shortlistItem.id}`,
+            apiUrl(`/api/shortlist/${shortlistItem.id}`),
             { headers: { 'Authorization': `Bearer ${getToken()}` } }
           );
           toast.success('Removed from shortlist!');
@@ -132,7 +133,7 @@ export default function BrowseRequests() {
         }
       } else {
         const response = await axios.post(
-          'http://localhost:5000/api/shortlist',
+          apiUrl('/api/shortlist'),
           { request_id: requestId },
           { headers: { 'Authorization': `Bearer ${getToken()}` } }
         );

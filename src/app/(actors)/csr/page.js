@@ -33,6 +33,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 import Header from '../../components/Header';
 import Alert from '../../components/Alert';
 import { useToast } from '../../components/ToastProvider';
@@ -108,7 +109,7 @@ export default function CSRDashboard() {
    */
   const fetchServiceTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests/service-types');
+      const response = await axios.get(apiUrl('/api/requests/service-types'));
       
       // Handle if response.data is an array (double-wrapped)
       const actualData = Array.isArray(response.data) ? response.data[0] : response.data;
@@ -143,7 +144,7 @@ export default function CSRDashboard() {
    */
   const fetchShortlistedIds = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shortlist', {
+      const response = await axios.get(apiUrl('/api/shortlist'), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       
@@ -172,7 +173,7 @@ export default function CSRDashboard() {
    */
   const fetchRequests = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests?status=ACTIVE', {
+      const response = await axios.get(apiUrl('/api/requests?status=ACTIVE'), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       if (response.data.success) {
@@ -239,7 +240,7 @@ export default function CSRDashboard() {
       if (isCurrentlyShortlisted) {
         // ===== REMOVE FROM SHORTLIST =====
         // Step 1: Fetch all shortlist items to find the specific item ID
-        const shortlistResponse = await axios.get('http://localhost:5000/api/shortlist', {
+        const shortlistResponse = await axios.get(apiUrl('/api/shortlist'), {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
         
@@ -249,7 +250,7 @@ export default function CSRDashboard() {
         
         if (shortlistItem) {
           // Step 2: Delete the shortlist item using its ID
-          await axios.delete(`http://localhost:5000/api/shortlist/${shortlistItem.id}`, {
+          await axios.delete(apiUrl(`/api/shortlist/${shortlistItem.id}`), {
             headers: { 'Authorization': `Bearer ${getToken()}` }
           });
           
@@ -262,7 +263,7 @@ export default function CSRDashboard() {
       } else {
         // ===== ADD TO SHORTLIST =====
         // Step 1: Send POST request with request_id
-        await axios.post('http://localhost:5000/api/shortlist', 
+        await axios.post(apiUrl('/api/shortlist'), 
           { request_id: requestId },
           { headers: { 'Authorization': `Bearer ${getToken()}` } }
         );

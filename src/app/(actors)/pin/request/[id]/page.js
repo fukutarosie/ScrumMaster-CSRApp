@@ -40,7 +40,7 @@ export default function RequestDetail() {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/requests/${requestId}`,
+        apiUrl(`/api/requests/${requestId}`),
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -63,7 +63,7 @@ export default function RequestDetail() {
   const fetchLookupData = async () => {
     try {
       const typesRes = await axios.get(
-        'http://localhost:5000/api/requests/service-types'
+        apiUrl('/api/requests/service-types')
       );
       
       // Handle if response.data is an array (double-wrapped)

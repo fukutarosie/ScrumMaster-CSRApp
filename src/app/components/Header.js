@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 
 export default function Header({ title = 'Dashboard', subtitle = null }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function Header({ title = 'Dashboard', subtitle = null }) {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/auth/logout', {}, {
+      await axios.post(apiUrl('/api/auth/logout'), {}, {
         headers: token
           ? {
               Authorization: `Bearer ${token}`,

@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import axios from 'axios';
 import { useToast } from '../../components/ToastProvider';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_BASE_URL, apiUrl } from '@/config/api';
 
 export default function PlatformDashboard() {
   const router = useRouter();
@@ -78,8 +77,8 @@ export default function PlatformDashboard() {
   const fetchStats = async () => {
     try {
       const [categoriesRes, dailyReportRes] = await Promise.all([
-        axios.get(`${API_URL}/api/platform/categories`, getAuthHeaders()),
-        axios.get(`${API_URL}/api/platform/reports/daily`, getAuthHeaders())
+        axios.get(apiUrl('/api/platform/categories'), getAuthHeaders()),
+        axios.get(apiUrl('/api/platform/reports/daily'), getAuthHeaders())
       ]);
 
       setStats({
@@ -97,7 +96,7 @@ export default function PlatformDashboard() {
     setCategoriesLoading(true);
     setCategoryError('');
     try {
-      const response = await axios.get(`${API_URL}/api/platform/categories`, getAuthHeaders());
+      const response = await axios.get(apiUrl('/api/platform/categories'), getAuthHeaders());
       if (response.data.success) {
         const data = response.data.data;
         const categoriesArray = data?.categories || (Array.isArray(data) ? data : []);
@@ -128,7 +127,7 @@ export default function PlatformDashboard() {
     setCategoryError('');
     try {
       const response = await axios.get(
-        `${API_URL}/api/platform/categories/search?keyword=${encodeURIComponent(searchKeyword)}`,
+        apiUrl(`/api/platform/categories/search?keyword=${encodeURIComponent(searchKeyword)}`),
         getAuthHeaders()
       );
       if (response.data.success) {
@@ -161,7 +160,7 @@ export default function PlatformDashboard() {
     setCategoryError('');
     try {
       const response = await axios.post(
-        `${API_URL}/api/platform/categories`,
+        apiUrl('/api/platform/categories'),
         categoryForm,
         getAuthHeaders()
       );
@@ -188,7 +187,7 @@ export default function PlatformDashboard() {
     setCategoryError('');
     try {
       const response = await axios.put(
-        `${API_URL}/api/platform/categories/${selectedCategory.id}`,
+        apiUrl(`/api/platform/categories/${selectedCategory.id}`),
         categoryForm,
         getAuthHeaders()
       );
@@ -252,12 +251,12 @@ export default function PlatformDashboard() {
     try {
       let url = '';
       if (reportType === 'daily') {
-        url = `${API_URL}/api/platform/reports/daily?date=${reportDate}`;
+        url = apiUrl(`/api/platform/reports/daily?date=${reportDate}`);
       } else if (reportType === 'weekly') {
-        url = `${API_URL}/api/platform/reports/weekly?start_date=${reportDate}`;
+        url = apiUrl(`/api/platform/reports/weekly?start_date=${reportDate}`);
       } else if (reportType === 'monthly') {
         const month = reportDate.substring(0, 7);
-        url = `${API_URL}/api/platform/reports/monthly?month=${month}`;
+        url = apiUrl(`/api/platform/reports/monthly?month=${month}`);
       }
       
       const response = await axios.get(url, getAuthHeaders());

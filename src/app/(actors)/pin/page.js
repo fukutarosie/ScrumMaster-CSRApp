@@ -94,7 +94,7 @@ export default function PINDashboard() {
       if (!token) return;
 
       const response = await axios.get(
-        'http://localhost:5000/api/requests/service-types',
+        apiUrl('/api/requests/service-types'),
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -122,7 +122,7 @@ export default function PINDashboard() {
     for (const req of requestsList) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/requests/${req.id}/analytics`,
+          apiUrl(`/api/requests/${req.id}/analytics`),
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -198,7 +198,7 @@ export default function PINDashboard() {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/requests?status=${status}`,
+        apiUrl(`/api/requests?status=${status}`),
         {
           headers: { Authorization: `Bearer ${token}` },
         }

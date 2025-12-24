@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function LoginPage() {
       try {
 
         // Step 1: Retrive all the User Roles (User Admin, PIN, CSR Rep, Platform Management) for the dropdown from the database via the API
-        const response = await fetch('http://localhost:5000/api/roles/public');
+        const response = await fetch(apiUrl('/api/roles/public'));
         
         const data = await response.json();
         

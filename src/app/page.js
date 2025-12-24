@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function LoginPage() {
       try {
 
         // Step 1: Retrive all the User Roles (User Admin, PIN, CSR Rep, Platform Management) for the dropdown from the database via the API
-        const response = await fetch('http://localhost:5000/api/roles/public');
+        const response = await fetch(apiUrl('/api/roles/public'));
         
         const data = await response.json();
         
@@ -60,7 +61,7 @@ export default function LoginPage() {
       console.log('[LOGIN] Sending request with data:', formData);
 
       // Step 2: Proceed with the login - login request to the API via the API Controller (Login Controller)
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

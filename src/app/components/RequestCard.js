@@ -11,6 +11,8 @@
  * @param {ReactNode} actionButton - Optional custom action button/content
  */
 
+import { API_BASE_URL } from '@/config/api';
+
 export default function RequestCard({ 
   request, 
   onClick, 
@@ -77,7 +79,7 @@ export default function RequestCard({
       <div className="relative h-48 bg-gray-200">
         {request.image_url ? (
           <img 
-            src={`http://localhost:5000${request.image_url}`}
+            src={`${API_BASE_URL}${request.image_url}`}
             alt={request.title}
             className="w-full h-full object-cover"
             onError={(e) => {

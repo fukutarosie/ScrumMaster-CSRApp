@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 import Header from '../../../components/Header';
 import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
@@ -53,7 +54,7 @@ export default function CSRHistory() {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shortlist', {
+      const response = await axios.get(apiUrl('/api/shortlist'), {
         headers: { 'Authorization': `Bearer ${getToken()}` },
         params: {
           status: 'COMPLETED',
@@ -76,7 +77,7 @@ export default function CSRHistory() {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shortlist/stats', {
+      const response = await axios.get(apiUrl('/api/shortlist/stats'), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
 
@@ -90,7 +91,7 @@ export default function CSRHistory() {
 
   const fetchServiceTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests/service-types');
+      const response = await axios.get(apiUrl('/api/requests/service-types'));
       const actualData = Array.isArray(response.data) ? response.data[0] : response.data;
       if (actualData?.success) {
         setServiceTypes(actualData.data || []);

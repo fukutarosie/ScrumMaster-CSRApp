@@ -32,7 +32,7 @@ export default function NewRequest() {
       console.log('Fetching service types...');
       // Fetch service types (no auth required for lookups)
       const typesRes = await axios.get(
-        'http://localhost:5000/api/requests/service-types'
+        apiUrl('/api/requests/service-types')
       );
       console.log('Service types response:', typesRes.data);
       
@@ -135,7 +135,7 @@ export default function NewRequest() {
       }
 
       const response = await axios.post(
-        'http://localhost:5000/api/requests',
+        apiUrl('/api/requests'),
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },

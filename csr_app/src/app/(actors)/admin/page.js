@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 import Header from '../../components/Header';
 import Alert from '../../components/Alert';
 import { useToast } from '../../components/ToastProvider';
@@ -78,7 +79,7 @@ export default function UserAdminDashboard() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:5000/api/userAccount', {
+      const response = await axios.get(apiUrl('/api/userAccount'), {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -105,7 +106,7 @@ export default function UserAdminDashboard() {
 
   const fetchRoles = async (retryCount = 0) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/userProfile', {
+      const response = await axios.get(apiUrl('/api/userProfile'), {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -132,7 +133,7 @@ export default function UserAdminDashboard() {
 
     try {
       // Call backend API to create user
-      const response = await axios.post('http://localhost:5000/api/userAccount', createForm, {
+      const response = await axios.post(apiUrl('/api/userAccount'), createForm, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -176,7 +177,7 @@ export default function UserAdminDashboard() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.put(`http://localhost:5000/api/userAccount/${editingUser.id}`, editForm, {
+      const response = await axios.put(apiUrl(`/api/userAccount/${editingUser.id}`), editForm, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -213,7 +214,7 @@ export default function UserAdminDashboard() {
     
     // Background API call - don't reload on success or failure
     try {
-      await axios.put(`http://localhost:5000/api/userAccount/${userId}/suspend`, {}, {
+      await axios.put(apiUrl(`/api/userAccount/${userId}/suspend`), {}, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -239,8 +240,8 @@ export default function UserAdminDashboard() {
     toast.success('User activated successfully');
     
     // Background API call - don't reload on success or failure
-    try {
-      await axios.put(`http://localhost:5000/api/userAccount/${userId}/activate`, {}, {
+    try :
+      await axios.put(apiUrl(`/api/userAccount/${userId}/activate`), {}, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -265,7 +266,7 @@ export default function UserAdminDashboard() {
     setError('');
     try {
       // Profiles are actually the roles table
-      const response = await axios.get('http://localhost:5000/api/userProfile', {
+      const response = await axios.get(apiUrl('/api/userProfile'), {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -291,7 +292,7 @@ export default function UserAdminDashboard() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/userProfile', profileForm, {
+      const response = await axios.post(apiUrl('/api/userProfile'), profileForm, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -319,7 +320,7 @@ export default function UserAdminDashboard() {
     setLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/userProfile/${editingProfile.id}`,
+        apiUrl(`/api/userProfile/${editingProfile.id}`),
         editProfileForm,
         {
           headers: {
