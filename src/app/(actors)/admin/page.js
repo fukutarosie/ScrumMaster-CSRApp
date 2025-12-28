@@ -7,6 +7,7 @@ import { apiUrl } from '@/config/api';
 import Header from '../../components/Header';
 import Alert from '../../components/Alert';
 import { useToast } from '../../components/ToastProvider';
+import { getToken } from '@/utils/storage';
 
 export default function UserAdminDashboard() {
   const router = useRouter();
@@ -54,9 +55,6 @@ export default function UserAdminDashboard() {
   });
 
   const [roles, setRoles] = useState([]);
-
-  // Get token from localStorage
-  const getToken = () => localStorage.getItem('token');
 
   // Auto-dismiss error messages after 3 seconds (successes use global toast)
   useEffect(() => {

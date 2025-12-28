@@ -8,6 +8,8 @@ import Header from '../../components/Header';
 import RequestCard from '../../components/RequestCard';
 import RequestCardGrid from '../../components/RequestCardGrid';
 import { useToast } from '../../components/ToastProvider';
+import { getToken, getUser } from '@/utils/storage';
+import { apiUrl } from '@/config/api';
 
 export default function PINDashboard() {
   const router = useRouter();
@@ -33,15 +35,13 @@ export default function PINDashboard() {
 
   useEffect(() => {
     // Check if user is logged in and has PIN role
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'PIN') {
       router.push('/');
       return;
@@ -90,7 +90,7 @@ export default function PINDashboard() {
 
   const fetchServiceTypes = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       if (!token) return;
 
       const response = await axios.get(
@@ -113,7 +113,7 @@ export default function PINDashboard() {
   const fetchAnalytics = async (requestsList) => {
     if (!requestsList || requestsList.length === 0) return;
     
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
     
     const analyticsData = {};
@@ -189,7 +189,7 @@ export default function PINDashboard() {
   const fetchRequests = async (status = 'ACTIVE') => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       if (!token) {
         setError('Not authenticated');

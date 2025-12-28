@@ -8,6 +8,7 @@ import Header from '../../../components/Header';
 import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
 import Link from 'next/link';
+import { getToken, getUser } from '@/utils/storage';
 
 export default function CompletedMatches() {
   const router = useRouter();
@@ -29,19 +30,15 @@ export default function CompletedMatches() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  const getToken = () => localStorage.getItem('token');
-
   useEffect(() => {
     // Check auth
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'PIN') {
       router.push('/');
       return;

@@ -6,6 +6,8 @@ import axios from 'axios';
 import Header from '../../../../components/Header';
 import Alert from '../../../../components/Alert';
 import { useToast } from '../../../../components/ToastProvider';
+import { getToken, getUser } from '@/utils/storage';
+import { apiUrl } from '@/config/api';
 
 export default function CSRViewRequestDetail() {
   const router = useRouter();
@@ -26,18 +28,14 @@ export default function CSRViewRequestDetail() {
 
   const takenByName = request?.active_assignment?.csr_user?.full_name;
 
-  const getToken = () => localStorage.getItem('token');
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'CSR Rep') {
       router.push('/');
       return;

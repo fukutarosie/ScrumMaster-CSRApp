@@ -1,10 +1,15 @@
 'use client';
 
+// Force dynamic rendering - don't prerender during build
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import Header from '../../../components/Header';
 import { useToast } from '../../../components/ToastProvider';
+import { getToken, getUser } from '@/utils/storage';
+import { apiUrl } from '@/config/api';
 
 export default function MyShortlist() {
   const router = useRouter();
@@ -25,8 +30,6 @@ export default function MyShortlist() {
   const [editForm, setEditForm] = useState({ status: '', notes: '' });
   const [confirmModal, setConfirmModal] = useState({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
 
-  const getToken = () => localStorage.getItem('token');
-
   const closeConfirmModal = () => setConfirmModal({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
 
   const openConfirmModal = ({ title, description, confirmLabel, onConfirm }) => {
@@ -43,15 +46,13 @@ export default function MyShortlist() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'CSR Rep') {
       router.push('/');
       return;

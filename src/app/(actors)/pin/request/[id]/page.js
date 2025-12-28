@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import Header from '../../../../components/Header';
+import { getToken } from '@/utils/storage';
+import { apiUrl } from '@/config/api';
 
 export default function RequestDetail() {
   const router = useRouter();
@@ -32,7 +34,7 @@ export default function RequestDetail() {
   const fetchRequest = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       if (!token) {
         setError('Not authenticated');
@@ -92,7 +94,7 @@ export default function RequestDetail() {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       const updates = {};
       ['title', 'description', 'service_type', 'region', 'requested_by_date', 'image_url'].forEach(key => {
@@ -141,7 +143,7 @@ export default function RequestDetail() {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       const response = await axios.put(
         `http://localhost:5000/api/requests/${requestId}/suspend`,

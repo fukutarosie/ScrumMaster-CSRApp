@@ -6,6 +6,7 @@ import Header from '../../components/Header';
 import axios from 'axios';
 import { useToast } from '../../components/ToastProvider';
 import { API_BASE_URL, apiUrl } from '@/config/api';
+import { getToken, getUser } from '@/utils/storage';
 
 export default function PlatformDashboard() {
   const router = useRouter();
@@ -37,15 +38,13 @@ export default function PlatformDashboard() {
   const toast = useToast();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const user = getUser();
 
-    if (!token || !userData) {
+    if (!token || !user) {
       router.push('/');
       return;
     }
-
-    const user = JSON.parse(userData);
     if (user.role.role_name !== 'Platform Management') {
       router.push('/');
       return;
@@ -65,7 +64,7 @@ export default function PlatformDashboard() {
   }, [activeTab]);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     return {
       headers: {
         Authorization: `Bearer ${token}`,

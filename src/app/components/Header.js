@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { apiUrl } from '@/config/api';
+import { getToken, getUser, clearAuth } from '@/utils/storage';
 
 export default function Header({ title = 'Dashboard', subtitle = null }) {
   const router = useRouter();
@@ -13,16 +14,10 @@ export default function Header({ title = 'Dashboard', subtitle = null }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setToken(localStorage.getItem('token'));
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (err) {
-          console.error('Failed to parse user data:', err);
-        }
-      }
+    setToken(getToken());
+    const userData = getUser();
+    if (userData) {
+      setUser(userData);
     }
   }, []);
 
@@ -38,11 +33,8 @@ export default function Header({ title = 'Dashboard', subtitle = null }) {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      if (typeof window !== 'undefined') {
-        // Clear token and user from localStorage regardless of API response
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+      // Clear token and user from localStorage regardless of API response
+      clearAuth();
       setToken(null);
       router.push('/');
       setIsLogoutModalOpen(false);

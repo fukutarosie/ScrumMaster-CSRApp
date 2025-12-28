@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
+import { setToken, setUser } from '@/utils/storage';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -82,8 +83,8 @@ export default function LoginPage() {
       }
 
       console.log('[LOGIN] Login successful, storing token and redirecting...');
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
+      setToken(data.data.token);
+      setUser(data.data.user);
       
       // Use window.location.href for more reliable redirect
       window.location.href = data.data.user.role.dashboard_route;

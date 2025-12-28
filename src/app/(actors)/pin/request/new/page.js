@@ -5,6 +5,8 @@ import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '../../../../components/Header';
+import { getToken } from '@/utils/storage';
+import { apiUrl } from '@/config/api';
 
 export default function NewRequest() {
   const router = useRouter();
@@ -118,7 +120,7 @@ export default function NewRequest() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       if (!token) {
         setError('Not authenticated');

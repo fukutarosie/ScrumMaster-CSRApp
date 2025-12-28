@@ -39,6 +39,7 @@ import Alert from '../../components/Alert';
 import { useToast } from '../../components/ToastProvider';
 import RequestCard from '../../components/RequestCard';
 import RequestCardGrid from '../../components/RequestCardGrid';
+import { getToken, getUser } from '@/utils/storage';
 
 export default function CSRDashboard() {
   // ===== STATE MANAGEMENT =====
@@ -55,12 +56,6 @@ export default function CSRDashboard() {
   const [addingToShortlist, setAddingToShortlist] = useState(null); // Track which request is being added/removed
 
   /**
-   * Helper: Get JWT authentication token from localStorage
-   * Used in all API calls requiring authentication
-   */
-  const getToken = () => localStorage.getItem('token');
-
-  /**
    * INITIALIZATION EFFECT
    * Runs on component mount to:
    * 1. Validate user authentication and role
@@ -70,15 +65,13 @@ export default function CSRDashboard() {
    */
   useEffect(() => {
     // Check if user is logged in and has CSR Rep role
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'CSR Rep') {
       router.push('/');
       return;

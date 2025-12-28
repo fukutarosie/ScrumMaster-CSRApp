@@ -9,6 +9,7 @@ import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
 import RequestCard from '../../../components/RequestCard';
 import RequestCardGrid from '../../../components/RequestCardGrid';
+import { getToken, getUser } from '@/utils/storage';
 
 export default function BrowseRequests() {
   const router = useRouter();
@@ -23,18 +24,14 @@ export default function BrowseRequests() {
   const [searchServiceType, setSearchServiceType] = useState('');
   const [addingToShortlist, setAddingToShortlist] = useState(null);
 
-  const getToken = () => localStorage.getItem('token');
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = getToken();
+    const parsedUser = getUser();
 
-    if (!token || !userData) {
+    if (!token || !parsedUser) {
       router.push('/');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'CSR Rep') {
       router.push('/');
       return;
