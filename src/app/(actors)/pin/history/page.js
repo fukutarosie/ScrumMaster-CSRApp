@@ -8,7 +8,6 @@ import Header from '../../../components/Header';
 import Alert from '../../../components/Alert';
 import { useToast } from '../../../components/ToastProvider';
 import Link from 'next/link';
-import { getToken, getUser } from '@/utils/storage';
 
 export default function CompletedMatches() {
   const router = useRouter();
@@ -30,15 +29,19 @@ export default function CompletedMatches() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  const getToken = () => localStorage.getItem('token');
+
   useEffect(() => {
     // Check auth
-    const token = getToken();
-    const parsedUser = getUser();
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
 
-    if (!token || !parsedUser) {
+    if (!token || !userData) {
       router.push('/');
       return;
     }
+
+    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'PIN') {
       router.push('/');
       return;
@@ -80,7 +83,7 @@ export default function CompletedMatches() {
 
       console.log('[DEBUG] Fetching completed matches with params:', params);
 
-      const response = await axios.get('http://localhost:5000/api/requests/history', {
+      const response = await axios.get(apiUrl('/api/requests/history'), {
         headers: { 'Authorization': `Bearer ${token}` },
         params
       });

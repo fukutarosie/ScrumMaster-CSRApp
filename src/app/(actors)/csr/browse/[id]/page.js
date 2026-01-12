@@ -49,7 +49,7 @@ export default function CSRViewRequestDetail() {
   const fetchRequestDetail = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/requests/${requestId}`, {
+      const response = await axios.get(apiUrl(`/api/requests/${requestId}`), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
 
@@ -68,7 +68,7 @@ export default function CSRViewRequestDetail() {
 
   const checkIfShortlisted = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shortlist', {
+      const response = await axios.get(apiUrl('/api/shortlist'), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       
@@ -94,7 +94,7 @@ export default function CSRViewRequestDetail() {
     try {
       if (isShortlisted) {
         // Remove from shortlist - need to get the shortlist item ID first
-        const response = await axios.get('http://localhost:5000/api/shortlist', {
+        const response = await axios.get(apiUrl('/api/shortlist'), {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
         
@@ -105,7 +105,7 @@ export default function CSRViewRequestDetail() {
           const shortlistItem = actualData.data.find(item => item.request_id === parseInt(requestId));
           
           if (shortlistItem) {
-            await axios.delete(`http://localhost:5000/api/shortlist/${shortlistItem.id}`, {
+            await axios.delete(apiUrl(`/api/shortlist/${shortlistItem.id}`), {
               headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             setIsShortlisted(false);
@@ -114,7 +114,7 @@ export default function CSRViewRequestDetail() {
         }
       } else {
         // Add to shortlist
-        await axios.post('http://localhost:5000/api/shortlist', 
+        await axios.post(apiUrl('/api/shortlist'), 
           { request_id: parseInt(requestId) },
           { headers: { 'Authorization': `Bearer ${getToken()}` } }
         );

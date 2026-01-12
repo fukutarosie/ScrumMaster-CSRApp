@@ -5,9 +5,8 @@ import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
-import Header from '../../../../components/Header';
-import { getToken } from '@/utils/storage';
 import { apiUrl } from '@/config/api';
+import Header from '../../../../components/Header';
 
 export default function RequestDetail() {
   const router = useRouter();
@@ -34,7 +33,7 @@ export default function RequestDetail() {
   const fetchRequest = async () => {
     try {
       setLoading(true);
-      const token = getToken();
+      const token = localStorage.getItem('token');
       
       if (!token) {
         setError('Not authenticated');
@@ -94,7 +93,7 @@ export default function RequestDetail() {
     setSuccess(null);
 
     try {
-      const token = getToken();
+      const token = localStorage.getItem('token');
       
       const updates = {};
       ['title', 'description', 'service_type', 'region', 'requested_by_date', 'image_url'].forEach(key => {
@@ -110,7 +109,7 @@ export default function RequestDetail() {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/requests/${requestId}`,
+        apiUrl(`/api/requests/${requestId}`),
         updates,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -143,10 +142,10 @@ export default function RequestDetail() {
     setSuccess(null);
 
     try {
-      const token = getToken();
+      const token = localStorage.getItem('token');
       
       const response = await axios.put(
-        `http://localhost:5000/api/requests/${requestId}/suspend`,
+        apiUrl(`/api/requests/${requestId}/suspend`),
         { reason: suspendReason || null },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -308,7 +307,7 @@ export default function RequestDetail() {
                 <div className="mb-8">
                   <p className="text-gray-500 text-sm font-semibold uppercase mb-3">Request Image</p>
                   <img 
-                    src={`http://localhost:5000${request.image_url}`}
+                    src={apiUrl(request.image_url)}
                     alt={request.title}
                     className="w-full max-h-96 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
                   />

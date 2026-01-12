@@ -6,10 +6,9 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import { apiUrl } from '@/config/api';
 import Header from '../../../components/Header';
 import { useToast } from '../../../components/ToastProvider';
-import { getToken, getUser } from '@/utils/storage';
-import { apiUrl } from '@/config/api';
 
 export default function MyShortlist() {
   const router = useRouter();
@@ -30,6 +29,8 @@ export default function MyShortlist() {
   const [editForm, setEditForm] = useState({ status: '', notes: '' });
   const [confirmModal, setConfirmModal] = useState({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
 
+  const getToken = () => localStorage.getItem('token');
+
   const closeConfirmModal = () => setConfirmModal({ open: false, title: '', description: '', confirmLabel: '', onConfirm: null });
 
   const openConfirmModal = ({ title, description, confirmLabel, onConfirm }) => {
@@ -46,13 +47,15 @@ export default function MyShortlist() {
   };
 
   useEffect(() => {
-    const token = getToken();
-    const parsedUser = getUser();
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
 
-    if (!token || !parsedUser) {
+    if (!token || !userData) {
       router.push('/');
       return;
     }
+
+    const parsedUser = JSON.parse(userData);
     if (parsedUser.role.role_name !== 'CSR Rep') {
       router.push('/');
       return;
@@ -76,7 +79,7 @@ export default function MyShortlist() {
 
   const fetchServiceTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests/service-types');
+      const response = await axios.get(apiUrl('/api/requests/service-types'));
       
       // Handle if response.data is an array (double-wrapped)
       const actualData = Array.isArray(response.data) ? response.data[0] : response.data;
@@ -100,7 +103,7 @@ export default function MyShortlist() {
       
       const params = statusFilter ? { status: statusFilter } : {};
       
-      const response = await axios.get('http://localhost:5000/api/shortlist', {
+      const response = await axios.get(apiUrl('/api/shortlist'), {
         headers: { 'Authorization': `Bearer ${token}` },
         params
       });
@@ -148,7 +151,7 @@ export default function MyShortlist() {
   const executeRemove = async (shortlistId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/shortlist/${shortlistId}`,
+        apiUrl(`/api/shortlist/${shortlistId}`),
         { headers: { 'Authorization': `Bearer ${getToken()}` } }
       );
 
@@ -192,7 +195,7 @@ export default function MyShortlist() {
 
       const payload = { status: 'IN_PROGRESS' };
       const response = await axios.patch(
-        `http://localhost:5000/api/shortlist/${shortlistId}/status`,
+        apiUrl(`/api/shortlist/${shortlistId}/status`),
         payload,
         { headers: { 'Authorization': `Bearer ${getToken()}` } }
       );
@@ -232,7 +235,7 @@ export default function MyShortlist() {
       console.log(`[DEBUG] Updating shortlist ${shortlistId} to status: ${editForm.status}`);
 
       const response = await axios.patch(
-        `http://localhost:5000/api/shortlist/${shortlistId}/status`,
+        apiUrl(`/api/shortlist/${shortlistId}/status`),
         payload,
         { headers: { 'Authorization': `Bearer ${getToken()}` } }
       );
@@ -573,7 +576,7 @@ export default function MyShortlist() {
                       {item.requests?.image_url && (
                         <div className="w-full md:w-48 h-48 flex-shrink-0">
                           <img
-                            src={`http://localhost:5000${item.requests.image_url}`}
+                            src={apiUrl(item.requests.image_url)}
                             alt={item.requests?.title}
                             className="w-full h-full object-cover rounded-lg"
                             onError={(e) => {
