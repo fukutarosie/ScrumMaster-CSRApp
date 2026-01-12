@@ -1,0 +1,67 @@
+# Node.js / Frontend files (not needed for Flask backend)
+node_modules/
+package.json
+package-lock.json
+.next/
+out/
+jsconfig.json
+next.config.js
+postcss.config.js
+tailwind.config.js
+
+# Frontend source code
+src/app/
+src/components/
+
+# Git
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+dist/
+build/
+
+# Environment files
+environment.env
+.env
+.env.*
+
+# Testing
+tests/
+test_*.py
+*.test.py
+pytest.ini
+.pytest_cache/
+
+# Documentation
+*.md
+DIAGRAM DOCUMENTATION/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Static uploads
+static/uploads/
+
+# Vercel specific
+.vercel/
+vercel.json
+csr_app/vercel.json
+csr_app/api/
+
+# Development files
+run.bat
+run.ps1
+preflight_check.py
+test_*.py
+utilities/
