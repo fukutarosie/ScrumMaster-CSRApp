@@ -1,0 +1,55 @@
+# Node modules and frontend build files
+node_modules/
+.next/
+out/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment files (will be set in Railway dashboard)
+environment.env
+.env
+.env.local
+
+# Testing
+tests/
+*.test.py
+test_*.py
+
+# Documentation
+DIAGRAM DOCUMENTATION/
+*.md
+!requirements.txt
+
+# Static uploads (use cloud storage in production)
+static/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Vercel specific files
+.vercel/
+vercel.json
+csr_app/
+
+# Frontend source (not needed for backend)
+src/app/
+src/components/
+jsconfig.json
+next.config.js
+postcss.config.js
+tailwind.config.js
+package.json
+package-lock.json

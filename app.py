@@ -15,8 +15,15 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-jwt-secret')
 app.config['JSON_SORT_KEYS'] = False
 
 # Enable CORS
+# Allow Vercel deployment domains and local development
 cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:3002').split(',')
-CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+CORS(app, 
+     resources={r"/api/*": {
+         "origins": cors_origins,
+         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Authorization"],
+         "supports_credentials": True
+     }})
 
 # Import and register blueprints
 # Auth API Endpoints
