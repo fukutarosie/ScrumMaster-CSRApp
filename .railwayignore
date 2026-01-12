@@ -2,6 +2,12 @@
 node_modules/
 .next/
 out/
+package.json
+package-lock.json
+jsconfig.json
+next.config.js
+postcss.config.js
+tailwind.config.js
 
 # Python cache
 __pycache__/
