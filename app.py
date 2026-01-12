@@ -4,7 +4,10 @@ from flask import Flask
 from flask_cors import CORS
 
 # Load environment variables
-load_dotenv('environment.env')
+# In production (Railway), env vars are set directly - load_dotenv will do nothing
+# In local development, it loads from .env or environment.env
+load_dotenv('environment.env')  # For local development
+load_dotenv()  # Fallback to .env file
 
 # Create Flask app with static folder configured
 app = Flask(__name__, static_folder='static', static_url_path='/static')
